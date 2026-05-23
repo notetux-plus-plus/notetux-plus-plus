@@ -5,7 +5,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+pkg_check_modules(GTK3      REQUIRED gtk+-3.0)
+pkg_check_modules(LIBSOUP   REQUIRED libsoup-3.0)
+pkg_check_modules(JSON_GLIB REQUIRED json-glib-1.0)
 
 set(SCI_ROOT "${CMAKE_SOURCE_DIR}/scintilla")
 set(LEX_ROOT "${CMAKE_SOURCE_DIR}/lexilla")
@@ -105,6 +107,8 @@ target_include_directories(notetux++ PRIVATE
     "${SCI_ROOT}/gtk"
     "${LEX_ROOT}/include"
     ${GTK3_INCLUDE_DIRS}
+    ${LIBSOUP_INCLUDE_DIRS}
+    ${JSON_GLIB_INCLUDE_DIRS}
 )
 
 # Allow packaging recipes to override the runtime resources path:
@@ -117,7 +121,11 @@ target_compile_definitions(notetux++ PRIVATE
     GTK
     RESOURCES_DIR="${RESOURCES_DIR}"
 )
-target_compile_options(notetux++ PRIVATE ${GTK3_CFLAGS_OTHER})
+target_compile_options(notetux++ PRIVATE
+    ${GTK3_CFLAGS_OTHER}
+    ${LIBSOUP_CFLAGS_OTHER}
+    ${JSON_GLIB_CFLAGS_OTHER}
+)
 # lexilla_bridge.cpp needs cstdint for the same reason as lexilla
 set_source_files_properties(src/lexilla_bridge.cpp PROPERTIES
     COMPILE_OPTIONS "-include;cstdint")
@@ -126,5 +134,7 @@ target_link_libraries(notetux++ PRIVATE
     scintilla
     lexilla
     ${GTK3_LIBRARIES}
+    ${LIBSOUP_LIBRARIES}
+    ${JSON_GLIB_LIBRARIES}
     m
 )
