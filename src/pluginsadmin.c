@@ -145,7 +145,9 @@ static GPtrArray *parse_catalogue(const char *text, gsize len)
 /* List store                                                          */
 /* ------------------------------------------------------------------ */
 
-enum { COL_IDX=0, COL_NAME, COL_VER, COL_AUTHOR, COL_DESC, COL_STATUS, N_COLS };
+enum { COL_IDX=0, COL_NAME, COL_VER, COL_AUTHOR, COL_DESC, COL_STATUS, COL_BG, N_COLS };
+
+#define INSTALLED_BG "#d4edda"  /* light green for installed rows */
 
 static const char *entry_status(const CatalogEntry *e)
 {
@@ -162,6 +164,7 @@ static void populate_store(void)
     if (!s_catalog) return;
     for (guint i = 0; i < s_catalog->len; i++) {
         CatalogEntry *e = s_catalog->pdata[i];
+        const char *status = entry_status(e);
         GtkTreeIter it;
         gtk_list_store_append(s_store, &it);
         gtk_list_store_set(s_store, &it,
@@ -170,7 +173,8 @@ static void populate_store(void)
             COL_VER,    e->version,
             COL_AUTHOR, e->author,
             COL_DESC,   e->description,
-            COL_STATUS, entry_status(e),
+            COL_STATUS, status,
+            COL_BG,     strcmp(status, "Installed") == 0 ? INSTALLED_BG : NULL,
             -1);
     }
 }
@@ -329,7 +333,10 @@ static gboolean on_install_done(gpointer data)
                 int idx;
                 gtk_tree_model_get(m, &it, COL_IDX, &idx, -1);
                 if ((guint)idx == job->entry_idx) {
-                    gtk_list_store_set(s_store, &it, COL_STATUS, "Installed", -1);
+                    gtk_list_store_set(s_store, &it,
+                        COL_STATUS, "Installed",
+                        COL_BG,     INSTALLED_BG,
+                        -1);
                     break;
                 }
             } while (gtk_tree_model_iter_next(m, &it));
@@ -543,7 +550,10 @@ static void on_uninstall_clicked(GtkButton *b, gpointer ud)
     }
 
     if (s_installed) g_hash_table_remove(s_installed, e->name);
-    gtk_list_store_set(s_store, &it, COL_STATUS, "Available", -1);
+    gtk_list_store_set(s_store, &it,
+        COL_STATUS, "Available",
+        COL_BG,     NULL,
+        -1);
     sync_buttons();
 
     GtkWidget *info = gtk_message_dialog_new(GTK_WINDOW(s_dialog),
@@ -580,8 +590,14 @@ static void build_dialog(GtkWindow *parent)
 
     /* ── tree ──────────────────────────────────────────────────── */
     s_store = gtk_list_store_new(N_COLS,
-        G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING,
-        G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+        G_TYPE_INT,    /* COL_IDX    */
+        G_TYPE_STRING, /* COL_NAME   */
+        G_TYPE_STRING, /* COL_VER    */
+        G_TYPE_STRING, /* COL_AUTHOR */
+        G_TYPE_STRING, /* COL_DESC   */
+        G_TYPE_STRING, /* COL_STATUS */
+        G_TYPE_STRING  /* COL_BG     */
+    );
 
     GtkWidget *tv = gtk_tree_view_new_with_model(GTK_TREE_MODEL(s_store));
     g_object_unref(s_store);  /* view holds the ref */
@@ -596,10 +612,11 @@ static void build_dialog(GtkWindow *parent)
         { "Description", COL_DESC,   TRUE  },
         { "Status",      COL_STATUS, FALSE },
     };
-    GtkCellRenderer *r = gtk_cell_renderer_text_new();
     for (int i = 0; i < 5; i++) {
+        GtkCellRenderer *r = gtk_cell_renderer_text_new();
         GtkTreeViewColumn *c = gtk_tree_view_column_new_with_attributes(
             cols[i].label, r, "text", cols[i].col, NULL);
+        gtk_tree_view_column_add_attribute(c, r, "cell-background", COL_BG);
         gtk_tree_view_column_set_resizable(c, TRUE);
         gtk_tree_view_column_set_expand(c, cols[i].expand);
         gtk_tree_view_append_column(GTK_TREE_VIEW(tv), c);
