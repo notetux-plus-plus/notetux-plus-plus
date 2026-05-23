@@ -30,7 +30,7 @@ jobs:
 
       - name: Build .deb
         run: |
-          dpkg-buildpackage -b -us -uc --build=binary -d packaging/debian
+          dpkg-buildpackage -b -us -uc --build=binary -C packaging/debian
           mkdir dist
           mv ../notetux++_*.deb dist/
 
