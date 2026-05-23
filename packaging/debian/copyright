@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: notetux++
 Upstream-Contact: Andrea Coi <acandry90@gmail.com>
-Source: https://github.com/andreacos/notetux
+Source: https://github.com/notetux-plus-plus/notetux-plus-plus
 
 Files: *
 Copyright: 2026 Andrea Coi <acandry90@gmail.com>

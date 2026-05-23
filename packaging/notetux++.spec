@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Feature-rich text editor for Linux
 
 License:        GPL-3.0-or-later
-URL:            https://github.com/andreacos/notetux
+URL:            https://github.com/notetux-plus-plus/notetux-plus-plus
 # Create the tarball with:
 #   git archive --format=tar.gz --prefix=notetux++-1.0.0/ HEAD \
 #       > ~/rpmbuild/SOURCES/notetux++-1.0.0.tar.gz
@@ -16,12 +16,16 @@ BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig
 BuildRequires:  gtk3-devel
 BuildRequires:  glib2-devel
+BuildRequires:  libsoup3-devel
+BuildRequires:  json-glib-devel
 BuildRequires:  desktop-file-utils
 
 Requires:       gtk3
 Requires:       glib2
 Requires:       libstdc++
 Requires:       libatomic
+Requires:       libsoup3
+Requires:       json-glib
 Recommends:     enchant2
 
 %description

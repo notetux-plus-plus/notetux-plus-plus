@@ -4,22 +4,26 @@ pkgver=1.0.0
 pkgrel=1
 pkgdesc='Feature-rich text editor for Linux (GTK3 port of Notepad++)'
 arch=('x86_64')
-url='https://github.com/andreacos/notetux'
+url='https://github.com/notetux-plus-plus/notetux-plus-plus'
 license=('GPL-3.0-or-later')
 depends=(
     'gtk3'
     'glib2'
     'gcc-libs'
+    'libsoup3'
+    'json-glib'
 )
 makedepends=(
     'cmake'
     'pkgconf'
     'gcc'
+    'libsoup3'
+    'json-glib'
 )
 optdepends=(
     'enchant: spell checking support'
 )
-source=("${pkgname}-${pkgver}.tar.gz::https://github.com/andreacos/notetux/archive/refs/tags/v${pkgver}.tar.gz")
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/notetux-plus-plus/notetux-plus-plus/archive/refs/tags/v${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 # The GitHub archive extracts as the repo slug (notetux), not notetux++
