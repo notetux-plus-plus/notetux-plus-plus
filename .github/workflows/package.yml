@@ -30,9 +30,7 @@ jobs:
 
       - name: Build .deb
         run: |
-          # debian -> packaging/debian symlink is committed at the repo root.
-          # dpkg-buildpackage reads it and places the .deb one level up.
-          dpkg-buildpackage -b -us -uc
+          dpkg-buildpackage -b -us -uc --build=binary -d packaging/debian
           mkdir dist
           mv ../notetux++_*.deb dist/
 
