@@ -43,7 +43,7 @@ static long host_msg_cb(unsigned int msg, unsigned long wParam, long lParam);
 /* ------------------------------------------------------------------
  * Load one plugin from a .so path; silently skip if invalid
  * ------------------------------------------------------------------ */
-static void load_plugin(const char *sopath)
+static void load_plugin(const char *sopath, const char *plugin_name)
 {
     if (s_n_plugins >= MAX_PLUGINS) return;
 
@@ -61,9 +61,18 @@ static void load_plugin(const char *sopath)
         return;
     }
 
-    /* Optional: pass NppData before querying func array */
+    /* Build a per-plugin copy of NppData with the correct configDir.
+     * NppData is passed by value, so each plugin gets its own snapshot. */
+    NppData plugin_data = s_npp_data;
+    char *config_path = g_build_filename(g_get_home_dir(), ".config", "notetux",
+                                         "plugins", plugin_name, "config", NULL);
+    g_mkdir_with_parents(config_path, 0755);
+    snprintf(plugin_data.configDir, sizeof(plugin_data.configDir),
+             "%s", config_path);
+    g_free(config_path);
+
     SetInfo_t set_info = (SetInfo_t) dlsym(h, "setInfo");
-    if (set_info) set_info(s_npp_data);
+    if (set_info) set_info(plugin_data);
 
     LoadedPlugin *p = &s_plugins[s_n_plugins];
     p->dl_handle   = h;
@@ -98,7 +107,7 @@ static void scan_dir(const char *dir)
         char sopath[2048];
         snprintf(sopath, sizeof(sopath), "%s/%s/%s.so",
                  dir, ent->d_name, ent->d_name);
-        load_plugin(sopath);
+        load_plugin(sopath, ent->d_name);
     }
     closedir(d);
 }
@@ -242,6 +251,18 @@ long plugin_host_message(unsigned int msg, unsigned long wParam, long lParam)
         } else {
             buf[0] = '\0';
         }
+        return 1L;
+    }
+
+    case NPPM_GETPLUGINSCONFIGDIR: {
+        const char *name = (const char *)(intptr_t)wParam;
+        char       *buf  = (char *)(intptr_t)lParam;
+        if (!name || !buf) return 0L;
+        char *path = g_build_filename(g_get_home_dir(), ".config", "notetux",
+                                      "plugins", name, "config", NULL);
+        g_mkdir_with_parents(path, 0755);
+        snprintf(buf, 1024, "%s", path);
+        g_free(path);
         return 1L;
     }
 

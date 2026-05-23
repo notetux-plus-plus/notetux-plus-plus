@@ -19,10 +19,11 @@ typedef long (*NppHostMsg)(unsigned int msg, unsigned long wParam, long lParam);
 
 /** Passed to plugins that export setInfo(NppData). */
 typedef struct {
-    GtkWidget  *nppHandle;             /* main application window   */
-    GtkWidget  *scintillaMainHandle;   /* primary Scintilla widget  */
-    GtkWidget  *scintillaSecondHandle; /* secondary sci (or NULL)   */
-    NppHostMsg  hostMsg;               /* send a message to host    */
+    GtkWidget  *nppHandle;             /* main application window          */
+    GtkWidget  *scintillaMainHandle;   /* primary Scintilla widget         */
+    GtkWidget  *scintillaSecondHandle; /* secondary sci (or NULL)          */
+    NppHostMsg  hostMsg;               /* send a message to host           */
+    char        configDir[1024];       /* ~/.config/notetux/plugins/<Name>/config/ */
 } NppData;
 
 /* ------------------------------------------------------------------
@@ -38,6 +39,7 @@ typedef struct {
 #define NPPM_GETFILENAME           (NPPM_BASE + 39)  /* lParam = char* buf[256],  returns 1    */
 #define NPPM_GETDIRECTORYPATH      (NPPM_BASE + 40)  /* lParam = char* buf[2048], returns 1    */
 #define NPPM_SETSTATUSBAR          (NPPM_BASE + 34)  /* wParam = field ID, lParam = char* text */
+#define NPPM_GETPLUGINSCONFIGDIR   (NPPM_BASE + 97)  /* wParam = char* plugin_name, lParam = char* buf[1024] → 1 */
 
 /* Field IDs for NPPM_SETSTATUSBAR */
 #define STATUSBAR_DOC_TYPE      0
