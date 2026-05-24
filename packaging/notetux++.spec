@@ -41,7 +41,8 @@ Notepad++ compatible localization files.
 %build
 %cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DRESOURCES_DIR=%{_datadir}/notetux
+    -DRESOURCES_DIR=%{_datadir}/notetux \
+    -DAPP_VERSION=%{version}
 %cmake_build
 
 %install

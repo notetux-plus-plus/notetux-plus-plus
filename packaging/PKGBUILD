@@ -40,7 +40,8 @@ build() {
     cmake -B "${srcdir}/build" -S "${srcdir}/${_srcdir}" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
-        -DRESOURCES_DIR=/usr/share/notetux
+        -DRESOURCES_DIR=/usr/share/notetux \
+        -DAPP_VERSION="${pkgver}"
     cmake --build "${srcdir}/build" --parallel "$(nproc)"
 }
 

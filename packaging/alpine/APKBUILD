@@ -35,7 +35,8 @@ build() {
         -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
-        -DRESOURCES_DIR=/usr/share/notetux
+        -DRESOURCES_DIR=/usr/share/notetux \
+        -DAPP_VERSION="${pkgver}"
     cmake --build "$builddir/build"
 }
 
