@@ -567,7 +567,7 @@ static void cb_about(GtkMenuItem *i, gpointer d)
     (void)i; (void)d;
     GtkWidget *dlg = gtk_about_dialog_new();
     gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dlg), "Notetux++");
-    gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dlg), "1.0.0");
+    gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dlg), APP_VERSION);
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dlg),
         "A native Linux text editor inspired by Notepad++.\n"
         "Built with GTK3, Scintilla and Lexilla.");
@@ -586,6 +586,12 @@ static void cb_about(GtkMenuItem *i, gpointer d)
     };
     gtk_about_dialog_add_credit_section(GTK_ABOUT_DIALOG(dlg),
         "Built on the shoulders of", credits);
+    GdkPixbuf *logo = gdk_pixbuf_new_from_file(
+        RESOURCES_DIR "/icons/standard/icon.png", NULL);
+    if (logo) {
+        gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dlg), logo);
+        g_object_unref(logo);
+    }
     gtk_window_set_transient_for(GTK_WINDOW(dlg), GTK_WINDOW(s_main_window));
     gtk_dialog_run(GTK_DIALOG(dlg));
     gtk_widget_destroy(dlg);
@@ -596,7 +602,7 @@ static void cb_debug_info(GtkMenuItem *i, gpointer d)
 {
     (void)i; (void)d;
     gchar *info = g_strdup_printf(
-        "Notetux++ 1.0.0\n\n"
+        "Notetux++ " APP_VERSION "\n\n"
         "GTK:       %d.%d.%d  (built against %d.%d.%d)\n"
         "GLib:      %d.%d.%d\n"
         "Build:     " __DATE__ " " __TIME__,

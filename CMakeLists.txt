@@ -117,9 +117,26 @@ if(NOT DEFINED RESOURCES_DIR)
     set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 endif()
 
+# Derive APP_VERSION from the nearest git tag (e.g. v1.0.1 → "1.0.1").
+# Packaging jobs may override via -DAPP_VERSION=x.y.z.
+if(NOT DEFINED APP_VERSION)
+    execute_process(
+        COMMAND git describe --tags --abbrev=0
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE _GIT_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    string(REGEX REPLACE "^v" "" APP_VERSION "${_GIT_TAG}")
+    if(NOT APP_VERSION)
+        set(APP_VERSION "0.0.0")
+    endif()
+endif()
+
 target_compile_definitions(notetux++ PRIVATE
     GTK
     RESOURCES_DIR="${RESOURCES_DIR}"
+    APP_VERSION="${APP_VERSION}"
 )
 target_compile_options(notetux++ PRIVATE
     ${GTK3_CFLAGS_OTHER}
