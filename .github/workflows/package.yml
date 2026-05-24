@@ -31,10 +31,21 @@ jobs:
 
       - name: Build .deb
         run: |
-          # dpkg-buildpackage si aspetta debian/ nella root del progetto
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+              VER="${GITHUB_REF_NAME#v}"
+          else
+              VER=$(dpkg-parsechangelog -l packaging/debian/changelog \
+                        --show-field Version | cut -d- -f1)
+          fi
+
+          # dpkg-buildpackage reads version from debian/changelog — patch it.
+          sed -i "s/^notetux++ ([^)]*)/notetux++ (${VER}-1)/" \
+              packaging/debian/changelog
+
+          # dpkg-buildpackage expects debian/ in the project root.
           ln -s packaging/debian debian
           dpkg-buildpackage -b -us -uc --build=binary
-          rm debian  # pulizia (opzionale in CI)
+          rm debian
           mkdir dist
           mv ../notetux++_*.deb dist/
 
