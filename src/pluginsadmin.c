@@ -12,6 +12,9 @@
 #define SHA256_ZEROS \
     "0000000000000000000000000000000000000000000000000000000000000000"
 
+#define MAX_CATALOGUE_BYTES (1u * 1024u * 1024u)   /*  1 MB — catalogue is JSON text  */
+#define MAX_PLUGIN_BYTES   (50u * 1024u * 1024u)   /* 50 MB — generous cap for .so    */
+
 /* ------------------------------------------------------------------ */
 /* Data                                                                */
 /* ------------------------------------------------------------------ */
@@ -272,10 +275,15 @@ static gpointer fetch_thread(gpointer data)
     } else {
         gsize len;
         const char *text = g_bytes_get_data(body, &len);
-        fr->catalog = parse_catalogue(text, len);
-        g_bytes_unref(body);
-        if (!fr->catalog)
-            fr->error_msg = g_strdup("Failed to parse plugin catalogue.");
+        if (len > MAX_CATALOGUE_BYTES) {
+            fr->error_msg = g_strdup("Catalogue response too large (> 1 MB).");
+            g_bytes_unref(body);
+        } else {
+            fr->catalog = parse_catalogue(text, len);
+            g_bytes_unref(body);
+            if (!fr->catalog)
+                fr->error_msg = g_strdup("Failed to parse plugin catalogue.");
+        }
     }
 
     g_idle_add(on_fetch_done, fr);
@@ -390,6 +398,14 @@ static gpointer install_thread(gpointer data)
 
     gsize len;
     const guint8 *bytes = g_bytes_get_data(body, &len);
+
+    if (len > MAX_PLUGIN_BYTES) {
+        g_bytes_unref(body);
+        job->error_msg = g_strdup("Plugin file exceeds 50 MB size limit.");
+        job->success = FALSE;
+        g_idle_add(on_install_done, job);
+        return NULL;
+    }
 
     /* Verify SHA256 (skip when the hash is all zeros — dev build) */
     if (strcmp(job->sha256, SHA256_ZEROS) != 0) {

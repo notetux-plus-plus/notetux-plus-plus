@@ -6,6 +6,16 @@
  * Plugin authors should include this header when writing a plugin.
  * ------------------------------------------------------------------ */
 
+/* Buffer size constants for NPPM_GET* messages.
+ * Plugins MUST allocate buffers of at least these sizes before calling
+ * the corresponding NPPM message, e.g.:
+ *   char path[NPP_MAX_PATH];
+ *   nppData.hostMsg(NPPM_GETFULLCURRENTPATH, 0, (long)(intptr_t)path);
+ */
+#define NPP_MAX_PATH       2048   /* full file path  (NPPM_GETFULLCURRENTPATH, NPPM_GETDIRECTORYPATH) */
+#define NPP_MAX_FILENAME    256   /* file name only  (NPPM_GETFILENAME)                               */
+#define NPP_MAX_CONFIGDIR  1024   /* plugin config dir (NPPM_GETPLUGINSCONFIGDIR, NppData.configDir)  */
+
 /** One menu entry contributed by a plugin. */
 typedef struct {
     char   itemName[64];   /* display label (UTF-8); "-" = separator  */
@@ -23,7 +33,7 @@ typedef struct {
     GtkWidget  *scintillaMainHandle;   /* primary Scintilla widget         */
     GtkWidget  *scintillaSecondHandle; /* secondary sci (or NULL)          */
     NppHostMsg  hostMsg;               /* send a message to host           */
-    char        configDir[1024];       /* ~/.config/notetux/plugins/<Name>/config/ */
+    char        configDir[NPP_MAX_CONFIGDIR]; /* ~/.config/notetux/plugins/<Name>/config/ */
 } NppData;
 
 /* ------------------------------------------------------------------
@@ -35,11 +45,11 @@ typedef struct {
 #define NPPM_BASE                  (0x0400 + 1000)
 #define NPPM_GETCURRENTSCINTILLA   (NPPM_BASE + 4)   /* → (long)(GtkWidget*) active sci        */
 #define NPPM_GETNBOPENFILES        (NPPM_BASE + 7)   /* → int count of open tabs               */
-#define NPPM_GETFULLCURRENTPATH    (NPPM_BASE + 38)  /* lParam = char* buf[2048], returns 1    */
-#define NPPM_GETFILENAME           (NPPM_BASE + 39)  /* lParam = char* buf[256],  returns 1    */
-#define NPPM_GETDIRECTORYPATH      (NPPM_BASE + 40)  /* lParam = char* buf[2048], returns 1    */
-#define NPPM_SETSTATUSBAR          (NPPM_BASE + 34)  /* wParam = field ID, lParam = char* text */
-#define NPPM_GETPLUGINSCONFIGDIR   (NPPM_BASE + 97)  /* wParam = char* plugin_name, lParam = char* buf[1024] → 1 */
+#define NPPM_GETFULLCURRENTPATH    (NPPM_BASE + 38)  /* lParam = char* buf[NPP_MAX_PATH],      returns 1 */
+#define NPPM_GETFILENAME           (NPPM_BASE + 39)  /* lParam = char* buf[NPP_MAX_FILENAME],  returns 1 */
+#define NPPM_GETDIRECTORYPATH      (NPPM_BASE + 40)  /* lParam = char* buf[NPP_MAX_PATH],      returns 1 */
+#define NPPM_SETSTATUSBAR          (NPPM_BASE + 34)  /* wParam = field ID, lParam = char* text            */
+#define NPPM_GETPLUGINSCONFIGDIR   (NPPM_BASE + 97)  /* wParam = char* name, lParam = char* buf[NPP_MAX_CONFIGDIR] → 1 */
 
 /* Field IDs for NPPM_SETSTATUSBAR */
 #define STATUSBAR_DOC_TYPE      0

@@ -221,7 +221,7 @@ long plugin_host_message(unsigned int msg, unsigned long wParam, long lParam)
         if (!buf) return 0L;
         NppDoc *doc = editor_current_doc();
         if (doc && doc->filepath)
-            snprintf(buf, 2048, "%s", doc->filepath);
+            snprintf(buf, NPP_MAX_PATH, "%s", doc->filepath);
         else
             buf[0] = '\0';
         return 1L;
@@ -233,7 +233,7 @@ long plugin_host_message(unsigned int msg, unsigned long wParam, long lParam)
         NppDoc *doc = editor_current_doc();
         if (doc && doc->filepath) {
             const char *base = strrchr(doc->filepath, '/');
-            snprintf(buf, 256, "%s", base ? base + 1 : doc->filepath);
+            snprintf(buf, NPP_MAX_FILENAME, "%s", base ? base + 1 : doc->filepath);
         } else {
             buf[0] = '\0';
         }
@@ -246,7 +246,7 @@ long plugin_host_message(unsigned int msg, unsigned long wParam, long lParam)
         NppDoc *doc = editor_current_doc();
         if (doc && doc->filepath) {
             char *dir = g_path_get_dirname(doc->filepath);
-            snprintf(buf, 2048, "%s", dir);
+            snprintf(buf, NPP_MAX_PATH, "%s", dir);
             g_free(dir);
         } else {
             buf[0] = '\0';
@@ -261,7 +261,7 @@ long plugin_host_message(unsigned int msg, unsigned long wParam, long lParam)
         char *path = g_build_filename(g_get_home_dir(), ".config", "notetux",
                                       "plugins", name, "config", NULL);
         g_mkdir_with_parents(path, 0755);
-        snprintf(buf, 1024, "%s", path);
+        snprintf(buf, NPP_MAX_CONFIGDIR, "%s", path);
         g_free(path);
         return 1L;
     }

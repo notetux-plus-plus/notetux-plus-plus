@@ -96,20 +96,28 @@ static char *subst(const char *tmpl, const char *filepath)
     char *name = dot ? g_strndup(base, (gsize)(dot - base)) : g_strdup(base);
     char *ext  = dot ? g_strdup(dot + 1) : g_strdup("");
 
+    /* Shell-quote each substituted value so paths with spaces or
+     * metacharacters cannot inject shell commands when passed to sh -c. */
+    char *qfile = g_shell_quote(filepath);
+    char *qdir  = g_shell_quote(dir);
+    char *qname = g_shell_quote(name);
+    char *qext  = g_shell_quote(ext);
+
     GString *out = g_string_new(NULL);
     for (const char *p = tmpl; *p; ) {
         if (strncmp(p, "%FILE%", 6) == 0) {
-            g_string_append(out, filepath); p += 6;
+            g_string_append(out, qfile); p += 6;
         } else if (strncmp(p, "%DIR%",  5) == 0) {
-            g_string_append(out, dir);      p += 5;
+            g_string_append(out, qdir);  p += 5;
         } else if (strncmp(p, "%NAME%", 6) == 0) {
-            g_string_append(out, name);     p += 6;
+            g_string_append(out, qname); p += 6;
         } else if (strncmp(p, "%EXT%",  5) == 0) {
-            g_string_append(out, ext);      p += 5;
+            g_string_append(out, qext);  p += 5;
         } else {
             g_string_append_c(out, *p++);
         }
     }
+    g_free(qfile); g_free(qdir); g_free(qname); g_free(qext);
     g_free(dir); g_free(base); g_free(name); g_free(ext);
     return g_string_free(out, FALSE);
 }
