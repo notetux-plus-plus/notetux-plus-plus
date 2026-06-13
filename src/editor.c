@@ -260,7 +260,7 @@ static void setup_sci(GtkWidget *sci)
     sci_msg(sci, SCI_INDICSETFORE,  INCR_INDICATOR, 0x00CC44); /* BGR green */
     sci_msg(sci, SCI_INDICSETALPHA, INCR_INDICATOR, 130);
     sci_msg(sci, SCI_SETVIRTUALSPACEOPTIONS,
-            SCVS_RECTANGULARSELECTION | SCVS_USERACCESSIBLE, 0);
+            SCVS_RECTANGULARSELECTION, 0);
     sci_msg(sci, SCI_SETMULTIPLESELECTION,         1, 0);
     sci_msg(sci, SCI_SETADDITIONALSELECTIONTYPING, 1, 0);
     sci_msg(sci, SCI_SETMULTIPASTE,  SC_MULTIPASTE_EACH, 0);
