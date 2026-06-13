@@ -431,13 +431,17 @@ static const LangKeywords kKeywords[] = {
      * See LexHTML.cxx WordListSet(), case 4 → keywordsPHP. */
     { "php", 4,
       "abstract and array as break callable case catch class clone const continue "
-      "declare default do echo else elseif empty enddeclare endfor endforeach endif "
-      "endswitch endwhile enum extends false final finally fn for foreach function "
+      "declare default die do echo else elseif empty enddeclare endfor endforeach endif "
+      "endswitch endwhile enum exit extends false final finally fn for foreach function "
       "global goto if implements include include_once instanceof insteadof interface "
       "isset list match namespace new null or print private protected public readonly "
       "require require_once return static switch throw trait true try unset use var "
       "while xor yield "
-      "__CLASS__ __DIR__ __FILE__ __FUNCTION__ __LINE__ __METHOD__ __NAMESPACE__ __TRAIT__" },
+      /* type declaration keywords (PHP 7+/8+) */
+      "bool float int iterable mixed never object parent self string void "
+      /* magic constants */
+      "__CLASS__ __DIR__ __FILE__ __FUNCTION__ __HALT_COMPILER__ __LINE__ "
+      "__METHOD__ __NAMESPACE__ __PROPERTY__ __TRAIT__" },
     { "sql", 1,
       /* data types */
       "bigint binary bit blob boolean char character clob date datetime decimal "
