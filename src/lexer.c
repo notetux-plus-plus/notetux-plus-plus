@@ -280,15 +280,105 @@ static const LangKeywords kKeywords[] = {
       "static_assert static_cast struct switch template this thread_local throw true try "
       "typedef typeid typename union unsigned using virtual void volatile wchar_t while "
       "xor xor_eq" },
+    { "cpp", 1,
+      /* standard typedefs and common STL types */
+      "size_t ssize_t ptrdiff_t intptr_t uintptr_t "
+      "int8_t int16_t int32_t int64_t uint8_t uint16_t uint32_t uint64_t "
+      "int_least8_t int_least16_t int_least32_t int_least64_t "
+      "uint_least8_t uint_least16_t uint_least32_t uint_least64_t "
+      "int_fast8_t int_fast16_t int_fast32_t int_fast64_t "
+      "uint_fast8_t uint_fast16_t uint_fast32_t uint_fast64_t "
+      "intmax_t uintmax_t nullptr_t max_align_t "
+      "FILE DIR fpos_t va_list jmp_buf clock_t time_t "
+      "string wstring u8string u16string u32string "
+      "vector list deque array forward_list "
+      "map multimap unordered_map unordered_multimap "
+      "set multiset unordered_set unordered_multiset "
+      "stack queue priority_queue "
+      "shared_ptr unique_ptr weak_ptr make_shared make_unique "
+      "optional variant tuple pair any "
+      "function bind move forward" },
     { "python", 0,
       "False None True and as assert async await break class continue def del "
       "elif else except finally for from global if import in is lambda nonlocal not or "
       "pass raise return try while with yield" },
+    { "python", 1,
+      /* built-in functions */
+      "abs all any ascii bin bool breakpoint bytearray bytes callable chr classmethod "
+      "compile complex delattr dict dir divmod enumerate eval exec filter float format "
+      "frozenset getattr globals hasattr hash help hex id input int isinstance issubclass "
+      "iter len list locals map max memoryview min next object oct open ord pow print "
+      "property range repr reversed round set setattr slice sorted staticmethod str sum "
+      "super tuple type vars zip "
+      /* built-in exceptions */
+      "ArithmeticError AssertionError AttributeError BaseException BlockingIOError "
+      "BrokenPipeError BufferError BytesWarning ChildProcessError ConnectionAbortedError "
+      "ConnectionError ConnectionRefusedError ConnectionResetError DeprecationWarning "
+      "EOFError EnvironmentError Exception FileExistsError FileNotFoundError "
+      "FloatingPointError FutureWarning GeneratorExit IOError ImportError ImportWarning "
+      "IndentationError IndexError InterruptedError IsADirectoryError KeyError "
+      "KeyboardInterrupt LookupError MemoryError ModuleNotFoundError NameError "
+      "NotADirectoryError NotImplemented NotImplementedError OSError OverflowError "
+      "PendingDeprecationWarning PermissionError ProcessLookupError RecursionError "
+      "ReferenceError ResourceWarning RuntimeError RuntimeWarning StopAsyncIteration "
+      "StopIteration SyntaxError SyntaxWarning SystemError SystemExit TabError "
+      "TimeoutError TypeError UnboundLocalError UnicodeDecodeError UnicodeEncodeError "
+      "UnicodeError UnicodeTranslateError UnicodeWarning UserWarning ValueError "
+      "Warning ZeroDivisionError" },
     { "javascript", 0,
       "async await break case catch class const continue debugger default "
       "delete do else export extends false finally for from function if import in "
       "instanceof let new null of return static super switch this throw true try typeof "
-      "undefined var void while with yield" },
+      "undefined var void while with yield "
+      /* TypeScript extras (typescript resolves to javascript in resolve_kw_lang) */
+      "abstract declare enum implements interface keyof namespace module readonly satisfies" },
+    { "javascript", 1,
+      /* built-in global objects and functions */
+      "Array ArrayBuffer Atomics BigInt BigInt64Array BigUint64Array Boolean DataView "
+      "Date Error EvalError Float32Array Float64Array Function Generator GeneratorFunction "
+      "Int8Array Int16Array Int32Array Intl JSON Map Math Number Object Promise Proxy "
+      "RangeError ReferenceError Reflect RegExp Set SharedArrayBuffer String Symbol "
+      "SyntaxError TypeError Uint8Array Uint8ClampedArray Uint16Array Uint32Array "
+      "URIError WeakMap WeakRef WeakSet "
+      "clearInterval clearTimeout console decodeURI decodeURIComponent encodeURI "
+      "encodeURIComponent eval fetch globalThis isFinite isNaN parseFloat parseInt "
+      "queueMicrotask setInterval setTimeout structuredClone Infinity NaN" },
+    { "java", 0,
+      "abstract assert boolean break byte case catch char class const continue "
+      "default do double else enum extends final finally float for goto if "
+      "implements import instanceof int interface long native new null package "
+      "private protected public return sealed short static strictfp super switch "
+      "synchronized this throw throws transient true false try var void volatile while" },
+    { "go", 0,
+      "break case chan const continue default defer else fallthrough for func "
+      "go goto if import interface map package range return select struct switch type var" },
+    { "go", 1,
+      /* predeclared identifiers, built-in types and functions */
+      "append cap clear close complex copy delete imag len make max min new "
+      "panic print println real recover "
+      "bool byte complex64 complex128 error float32 float64 int int8 int16 int32 int64 "
+      "rune string uint uint8 uint16 uint32 uint64 uintptr "
+      "true false nil iota any comparable" },
+    { "cs", 0,
+      "abstract as base bool break byte case catch char checked class const continue "
+      "decimal default delegate do double else enum event explicit extern false finally "
+      "fixed float for foreach goto if implicit in int interface internal is lock long "
+      "namespace new null object operator out override params private protected public "
+      "readonly ref return sbyte sealed short sizeof stackalloc static string struct "
+      "switch this throw true try typeof uint ulong unchecked unsafe ushort using "
+      "virtual void volatile while async await dynamic var" },
+    { "swift", 0,
+      "actor any as associatedtype async await break case catch class continue "
+      "defer default deinit do else enum extension fallthrough false fileprivate "
+      "final for func guard if import in indirect infix init inout internal is "
+      "lazy let mutating nil nonisolated open operator optional override "
+      "package postfix precedencegroup prefix private protocol public repeat "
+      "rethrows return some static struct subscript super switch throws true try "
+      "typealias unowned var weak where while" },
+    { "gdscript", 0,
+      "and as assert await break class class_name const continue elif else enum "
+      "extends for func if in is match not null or pass preload return self setget "
+      "signal static super tool true false var void while yield" },
     { "sql", 0,
       "add all alter and any as asc authorization backup begin between by "
       "cascade case check close clustered coalesce column commit compute constraint "
@@ -311,6 +401,16 @@ static const LangKeywords kKeywords[] = {
       "as async await break const continue crate dyn else enum extern false fn for "
       "if impl in let loop match mod move mut pub ref return self Self static struct "
       "super trait true type union unsafe use where while" },
+    { "rust", 1,
+      /* primitive types */
+      "bool char f32 f64 i8 i16 i32 i64 i128 isize str u8 u16 u32 u64 u128 usize "
+      /* common standard library types */
+      "Box Vec String Option Result HashMap HashSet BTreeMap BTreeSet "
+      "Arc Mutex RwLock Cell RefCell Rc "
+      /* common traits */
+      "Copy Clone Debug Display Drop Eq Hash Ord PartialEq PartialOrd Send Sync Sized "
+      /* common enum variants */
+      "Some None Ok Err" },
     { "bash", 0,
       "case do done elif else esac fi for function if in select then time until while "
       "alias bg bind break builtin caller cd command compgen complete compopt continue "
@@ -321,6 +421,12 @@ static const LangKeywords kKeywords[] = {
     { "lua", 0,
       "and break do else elseif end false for function goto if in local nil not or "
       "repeat return then true until while" },
+    { "lua", 1,
+      /* standard library functions and modules */
+      "assert collectgarbage dofile error getmetatable ipairs load loadfile "
+      "next pairs pcall print rawequal rawget rawlen rawset require "
+      "select setmetatable tostring tonumber type xpcall "
+      "coroutine debug io math os package string table utf8" },
     /* phpscript lexer: slots 0-3 are unused; PHP keywords must go into slot 4.
      * See LexHTML.cxx WordListSet(), case 4 → keywordsPHP. */
     { "php", 4,
@@ -332,6 +438,13 @@ static const LangKeywords kKeywords[] = {
       "require require_once return static switch throw trait true try unset use var "
       "while xor yield "
       "__CLASS__ __DIR__ __FILE__ __FUNCTION__ __LINE__ __METHOD__ __NAMESPACE__ __TRAIT__" },
+    { "sql", 1,
+      /* data types */
+      "bigint binary bit blob boolean char character clob date datetime decimal "
+      "double float image int integer mediumblob mediumint mediumtext money "
+      "nchar ntext numeric nvarchar real smalldatetime smallint smallmoney "
+      "text time timestamp tinyblob tinyint tinytext uniqueidentifier "
+      "varbinary varchar year" },
     { "ruby", 0,
       "__FILE__ __LINE__ __ENCODING__ begin defined? do end false in module nil "
       "not or raise rescue retry return self super then true undef unless until when "
@@ -381,12 +494,9 @@ static void apply_keywords(GtkWidget *sci, const char *lang)
 {
     if (!lang || !*lang) return;
     const char *kw_lang = resolve_kw_lang(lang);
-    for (const LangKeywords *k = kKeywords; k->lang; k++) {
-        if (strcmp(k->lang, kw_lang) == 0) {
+    for (const LangKeywords *k = kKeywords; k->lang; k++)
+        if (strcmp(k->lang, kw_lang) == 0)
             sci_msg(sci, SCI_SETKEYWORDS, (uptr_t)k->slot, (sptr_t)k->keywords);
-            return;
-        }
-    }
 }
 
 /* ------------------------------------------------------------------ */
