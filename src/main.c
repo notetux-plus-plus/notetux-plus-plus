@@ -149,6 +149,31 @@ static void cb_clear_recent(GtkMenuItem *i, gpointer d)
 }
 
 /* ------------------------------------------------------------------ */
+/* Statusbar context-menu callbacks                                    */
+/* ------------------------------------------------------------------ */
+
+static void lang_menu_sync(const char *lang);   /* defined later */
+
+static void on_statusbar_enc_change(const char *enc)
+{
+    NppDoc *doc = editor_current_doc();
+    if (!doc || !enc) return;
+    g_free(doc->encoding);
+    doc->encoding = g_strdup(enc);
+    main_sync_encoding_menu(enc);
+}
+
+static void on_statusbar_lang_change(const char *lang_key)
+{
+    NppDoc *doc = editor_current_doc();
+    if (!doc) return;
+    const char *lang = (lang_key && lang_key[0]) ? lang_key : NULL;
+    lexer_apply(doc->sci, lang);
+    statusbar_set_language(lang ? lexer_display_name(lang) : NULL);
+    lang_menu_sync(lang ? lang : "");
+}
+
+/* ------------------------------------------------------------------ */
 /* Encoding menu                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -3974,6 +3999,8 @@ static void on_activate(GtkApplication *app, gpointer data)
     /* Status bar */
     GtkWidget *statusbar = statusbar_init();
     gtk_box_pack_start(GTK_BOX(vbox), statusbar, FALSE, FALSE, 0);
+    statusbar_set_encoding_cb(on_statusbar_enc_change);
+    statusbar_set_language_cb(on_statusbar_lang_change);
 
     /* Open files passed on the command line */
     const gchar **args = g_application_get_dbus_object_path(G_APPLICATION(app))
