@@ -426,21 +426,29 @@ void i18n_init(void)
     s_plain    = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
     s_mnemonic = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
+    /* Always load english.xml first as the base so custom strings that have
+     * no equivalent in NPP locale files still show in English rather than
+     * falling back to the raw compile-time fallback literal. */
+    char eng_path[1024];
+    snprintf(eng_path, sizeof(eng_path), RESOURCES_DIR "/localization/english.xml");
+    parse_file(eng_path);
+
+    /* Then overlay with the system locale file (overrides english keys). */
     const gchar * const *langs = g_get_language_names();
     char path[1024] = "";
 
     for (int i = 0; langs[i] && !path[0]; i++) {
         const char *stem = locale_to_stem(langs[i]);
         if (!stem) continue;
+        /* Skip if it resolves to english — already loaded above. */
+        if (strcmp(stem, "english") == 0) break;
         snprintf(path, sizeof(path), RESOURCES_DIR "/localization/%s.xml", stem);
         if (!g_file_test(path, G_FILE_TEST_EXISTS))
             path[0] = '\0';
     }
 
-    if (!path[0])
-        snprintf(path, sizeof(path), RESOURCES_DIR "/localization/english.xml");
-
-    parse_file(path);
+    if (path[0])
+        parse_file(path);
 }
 
 const char *i18n_str(const char *key, const char *fallback)

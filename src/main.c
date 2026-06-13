@@ -3108,12 +3108,12 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
     APPEND(file, menu_item("Open in Default Viewer", G_CALLBACK(cb_open_in_default_viewer), NULL, NULL, 0, 0));
     APPEND(file, menu_item("Open Folder as Workspace…", G_CALLBACK(cb_open_folder_workspace), NULL, NULL, 0, 0));
     APPEND(file, sep_item());
-    APPEND(file, menu_item(TM("cmd.reload", "Reload from Disk"), G_CALLBACK(cb_reload), NULL, NULL, 0, 0));
+    APPEND(file, menu_item(TM("cmd.41014", "Reload from Disk"), G_CALLBACK(cb_reload), NULL, NULL, 0, 0));
     APPEND(file, sep_item());
     APPEND(file, smi("cmd.save",  TM("cmd.41006", "_Save"),      G_CALLBACK(cb_save),   NULL, accel, GDK_KEY_s, GDK_CONTROL_MASK));
     APPEND(file, smi("cmd.saveas",TM("cmd.41008", "Save _As…"),  G_CALLBACK(cb_save_as),NULL, accel, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
     APPEND(file, menu_item("Save a Copy As…", G_CALLBACK(cb_save_copy_as), NULL, NULL, 0, 0));
-    APPEND(file, smi("cmd.saveall", TM("cmd.saveall", "Save All"), G_CALLBACK(cb_save_all), NULL, accel, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK));
+    APPEND(file, smi("cmd.saveall", TM("cmd.41007", "Save All"), G_CALLBACK(cb_save_all), NULL, accel, GDK_KEY_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK));
     APPEND(file, menu_item("Rename…", G_CALLBACK(cb_rename_file), NULL, NULL, 0, 0));
     APPEND(file, sep_item());
     APPEND(file, smi("cmd.close", TM("cmd.41003", "_Close"),     G_CALLBACK(cb_close),  NULL, accel, GDK_KEY_w, GDK_CONTROL_MASK));
@@ -3147,7 +3147,7 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
     APPEND(edit, smi("cmd.cut",   TM("cmd.42001", "Cu_t"),        G_CALLBACK(cb_cut),    NULL, accel, GDK_KEY_x, GDK_CONTROL_MASK));
     APPEND(edit, smi("cmd.copy",  TM("cmd.42002", "_Copy"),       G_CALLBACK(cb_copy),   NULL, accel, GDK_KEY_c, GDK_CONTROL_MASK));
     APPEND(edit, smi("cmd.paste", TM("cmd.42005", "_Paste"),      G_CALLBACK(cb_paste),  NULL, accel, GDK_KEY_v, GDK_CONTROL_MASK));
-    APPEND(edit, menu_item(TM("cmd.delete", "_Delete"),           G_CALLBACK(cb_delete), NULL, NULL,  0, 0));
+    APPEND(edit, menu_item(TM("cmd.42006", "_Delete"),           G_CALLBACK(cb_delete), NULL, NULL,  0, 0));
     APPEND(edit, sep_item());
     APPEND(edit, smi("cmd.selall",TM("cmd.42007", "Select _All"), G_CALLBACK(cb_selall), NULL, accel, GDK_KEY_a, GDK_CONTROL_MASK));
     APPEND(edit, sep_item());
@@ -3161,8 +3161,8 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
         APPEND(ctc_menu, menu_item("Directory Path",  G_CALLBACK(cb_copy_dirpath),  NULL, NULL, 0, 0));
         APPEND(edit, ctc_item);
     }
-    APPEND(edit, smi("cmd.indent",   TM("cmd.indent",   "_Indent"),          G_CALLBACK(cb_indent),   NULL, accel, GDK_KEY_Tab,       0));
-    APPEND(edit, smi("cmd.unindent", TM("cmd.unindent", "_Unindent"),        G_CALLBACK(cb_unindent), NULL, accel, GDK_KEY_Tab, GDK_SHIFT_MASK));
+    APPEND(edit, smi("cmd.indent",   TM("cmd.42008", "_Indent"),          G_CALLBACK(cb_indent),   NULL, accel, GDK_KEY_Tab,       0));
+    APPEND(edit, smi("cmd.unindent", TM("cmd.42009", "_Unindent"),        G_CALLBACK(cb_unindent), NULL, accel, GDK_KEY_Tab, GDK_SHIFT_MASK));
     APPEND(edit, sep_item());
     APPEND(edit, menu_item(TM("menu.columneditor", "_Column Editor…"),
                            G_CALLBACK(cb_column_editor), NULL, accel,
@@ -3171,19 +3171,19 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
 
     /* EOL Conversion submenu */
     {
-        GtkWidget *eol_sub_item = gtk_menu_item_new_with_mnemonic(TM("menu.eolformat", "EOL Con_version"));
+        GtkWidget *eol_sub_item = gtk_menu_item_new_with_mnemonic(TM("submenu.edit-eolConversion", "EOL Con_version"));
         GtkWidget *eol_menu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(eol_sub_item), eol_menu);
 
         GSList *eol_group = NULL;
         s_eol_items[SC_EOL_CRLF] = gtk_radio_menu_item_new_with_mnemonic(eol_group,
-            TM("menu.windows", "_Windows (CR+LF)"));
+            TM("cmd.45001", "_Windows (CR+LF)"));
         eol_group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(s_eol_items[SC_EOL_CRLF]));
         s_eol_items[SC_EOL_LF] = gtk_radio_menu_item_new_with_mnemonic(eol_group,
-            TM("menu.unix", "_Unix (LF)"));
+            TM("cmd.45002", "_Unix (LF)"));
         eol_group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(s_eol_items[SC_EOL_LF]));
         s_eol_items[SC_EOL_CR] = gtk_radio_menu_item_new_with_mnemonic(eol_group,
-            TM("menu.oldmac", "Old _Mac (CR)"));
+            TM("cmd.45003", "Old _Mac (CR)"));
 
         g_signal_connect(s_eol_items[SC_EOL_CRLF], "toggled",
                          G_CALLBACK(cb_eol_toggled), GINT_TO_POINTER(SC_EOL_CRLF));
@@ -3212,38 +3212,38 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
 
     /* Line operations submenu */
     {
-        GtkWidget *line_item = gtk_menu_item_new_with_mnemonic(TM("menu.line", "_Line Operations"));
+        GtkWidget *line_item = gtk_menu_item_new_with_mnemonic(TM("submenu.edit-lineOperations", "_Line Operations"));
         GtkWidget *line_menu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(line_item), line_menu);
-        APPEND(line_menu, smi("cmd.line.dup",  TM("menu.line.duplicate", "_Duplicate Line"),
+        APPEND(line_menu, smi("cmd.line.dup",  TM("cmd.42010", "_Duplicate Line"),
                                     G_CALLBACK(cb_line_duplicate), NULL, accel,
                                     GDK_KEY_d, GDK_CONTROL_MASK));
         APPEND(line_menu, smi("cmd.line.del",  TM("menu.line.delete", "D_elete Line"),
                                     G_CALLBACK(cb_line_delete), NULL, accel,
                                     GDK_KEY_l, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
         APPEND(line_menu, sep_item());
-        APPEND(line_menu, smi("cmd.line.up",   TM("menu.line.moveup", "Move Line _Up"),
+        APPEND(line_menu, smi("cmd.line.up",   TM("cmd.42014", "Move Line _Up"),
                                     G_CALLBACK(cb_line_move_up), NULL, accel,
                                     GDK_KEY_Up, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
-        APPEND(line_menu, smi("cmd.line.down", TM("menu.line.movedown", "Move Line _Down"),
+        APPEND(line_menu, smi("cmd.line.down", TM("cmd.42015", "Move Line _Down"),
                                     G_CALLBACK(cb_line_move_down), NULL, accel,
                                     GDK_KEY_Down, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
         APPEND(line_menu, sep_item());
-        APPEND(line_menu, menu_item(TM("menu.line.join",  "_Join Lines"),
+        APPEND(line_menu, menu_item(TM("cmd.42013", "_Join Lines"),
                                     G_CALLBACK(cb_join_lines),  NULL, NULL, 0, 0));
-        APPEND(line_menu, menu_item(TM("menu.line.split", "S_plit Lines"),
+        APPEND(line_menu, menu_item(TM("cmd.42012", "S_plit Lines"),
                                     G_CALLBACK(cb_split_lines), NULL, NULL, 0, 0));
         APPEND(line_menu, sep_item());
-        APPEND(line_menu, smi("cmd.line.insabove", TM("menu.line.insabove", "Insert Blank Line A_bove"),
+        APPEND(line_menu, smi("cmd.line.insabove", TM("cmd.42057", "Insert Blank Line A_bove"),
                                     G_CALLBACK(cb_line_insert_above), NULL, accel,
                                     GDK_KEY_Return, GDK_CONTROL_MASK | GDK_MOD1_MASK));
-        APPEND(line_menu, smi("cmd.line.insbelow", TM("menu.line.insbelow", "Insert Blank Line Belo_w"),
+        APPEND(line_menu, smi("cmd.line.insbelow", TM("cmd.42058", "Insert Blank Line Belo_w"),
                                     G_CALLBACK(cb_line_insert_below), NULL, accel,
                                     GDK_KEY_Return, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
         APPEND(line_menu, sep_item());
-        APPEND(line_menu, menu_item(TM("menu.line.rmdup",   "Remove _Duplicate Lines"),
+        APPEND(line_menu, menu_item(TM("cmd.42079", "Remove _Duplicate Lines"),
                                     G_CALLBACK(cb_remove_duplicate_lines), NULL, NULL, 0, 0));
-        APPEND(line_menu, menu_item(TM("menu.line.rmblank", "Remove _Blank Lines"),
+        APPEND(line_menu, menu_item(TM("cmd.42055", "Remove _Blank Lines"),
                                     G_CALLBACK(cb_remove_blank_lines),     NULL, NULL, 0, 0));
         APPEND(line_menu, sep_item());
         /* Sort Lines submenu */
@@ -3251,13 +3251,13 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
             GtkWidget *sort_item = gtk_menu_item_new_with_mnemonic(TM("menu.line.sort", "_Sort Lines"));
             GtkWidget *sort_menu = gtk_menu_new();
             gtk_menu_item_set_submenu(GTK_MENU_ITEM(sort_item), sort_menu);
-            APPEND(sort_menu, menu_item(TM("menu.line.sort.lexic",    "_Lexicographic"),        G_CALLBACK(cb_sort_lexic),    NULL, NULL, 0, 0));
-            APPEND(sort_menu, menu_item(TM("menu.line.sort.lexic_ci", "Lexicographic (_case-insensitive)"), G_CALLBACK(cb_sort_lexic_ci), NULL, NULL, 0, 0));
-            APPEND(sort_menu, menu_item(TM("menu.line.sort.length",   "By _Length"),            G_CALLBACK(cb_sort_length),   NULL, NULL, 0, 0));
-            APPEND(sort_menu, menu_item(TM("menu.line.sort.numeric",  "By _Number"),            G_CALLBACK(cb_sort_numeric),  NULL, NULL, 0, 0));
-            APPEND(sort_menu, menu_item(TM("menu.line.sort.random",   "R_andom Shuffle"),       G_CALLBACK(cb_sort_random),   NULL, NULL, 0, 0));
+            APPEND(sort_menu, menu_item(TM("cmd.42059", "_Lexicographic"),        G_CALLBACK(cb_sort_lexic),    NULL, NULL, 0, 0));
+            APPEND(sort_menu, menu_item(TM("cmd.42080", "Lexicographic (_case-insensitive)"), G_CALLBACK(cb_sort_lexic_ci), NULL, NULL, 0, 0));
+            APPEND(sort_menu, menu_item(TM("cmd.42104", "By _Length"),            G_CALLBACK(cb_sort_length),   NULL, NULL, 0, 0));
+            APPEND(sort_menu, menu_item(TM("cmd.42061", "By _Number"),            G_CALLBACK(cb_sort_numeric),  NULL, NULL, 0, 0));
+            APPEND(sort_menu, menu_item(TM("cmd.42078", "R_andom Shuffle"),       G_CALLBACK(cb_sort_random),   NULL, NULL, 0, 0));
             APPEND(sort_menu, sep_item());
-            APPEND(sort_menu, menu_item(TM("menu.line.sort.reverse",  "Re_verse Order"),        G_CALLBACK(cb_sort_reverse),  NULL, NULL, 0, 0));
+            APPEND(sort_menu, menu_item(TM("cmd.42060", "Re_verse Order"),        G_CALLBACK(cb_sort_reverse),  NULL, NULL, 0, 0));
             APPEND(line_menu, sort_item);
         }
         APPEND(edit, line_item);
@@ -3265,14 +3265,14 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
 
     /* Blank Operations submenu */
     {
-        GtkWidget *blank_item = gtk_menu_item_new_with_mnemonic(TM("menu.blank", "_Blank Operations"));
+        GtkWidget *blank_item = gtk_menu_item_new_with_mnemonic(TM("submenu.edit-blankOperations", "_Blank Operations"));
         GtkWidget *blank_menu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(blank_item), blank_menu);
-        APPEND(blank_menu, menu_item(TM("menu.blank.trimtrail", "Trim _Trailing Whitespace"),
+        APPEND(blank_menu, menu_item(TM("cmd.42024", "Trim _Trailing Whitespace"),
                                      G_CALLBACK(cb_trim_trailing), NULL, NULL, 0, 0));
-        APPEND(blank_menu, menu_item(TM("menu.blank.trimlead",  "Trim _Leading Whitespace"),
+        APPEND(blank_menu, menu_item(TM("cmd.42042", "Trim _Leading Whitespace"),
                                      G_CALLBACK(cb_trim_leading),  NULL, NULL, 0, 0));
-        APPEND(blank_menu, menu_item(TM("menu.blank.trimboth",  "Trim _Both"),
+        APPEND(blank_menu, menu_item(TM("cmd.42043", "Trim _Both"),
                                      G_CALLBACK(cb_trim_both),     NULL, NULL, 0, 0));
         APPEND(blank_menu, sep_item());
         APPEND(blank_menu, menu_item(TM("menu.blank.spacestotabs", "Convert _Spaces to Tabs"),
@@ -3284,27 +3284,27 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
 
     /* Convert Case To submenu */
     {
-        GtkWidget *case_item = gtk_menu_item_new_with_mnemonic(TM("menu.case", "Co_nvert Case To"));
+        GtkWidget *case_item = gtk_menu_item_new_with_mnemonic(TM("submenu.edit-convertCaseTo", "Co_nvert Case To"));
         GtkWidget *case_menu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(case_item), case_menu);
-        APPEND(case_menu, menu_item(TM("menu.case.upper",    "_UPPER CASE"),    G_CALLBACK(cb_case_upper),    NULL, NULL, 0, 0));
-        APPEND(case_menu, menu_item(TM("menu.case.lower",    "_lower case"),    G_CALLBACK(cb_case_lower),    NULL, NULL, 0, 0));
-        APPEND(case_menu, menu_item(TM("menu.case.proper",   "_Proper Case"),   G_CALLBACK(cb_case_proper),   NULL, NULL, 0, 0));
-        APPEND(case_menu, menu_item(TM("menu.case.sentence", "_Sentence case"), G_CALLBACK(cb_case_sentence), NULL, NULL, 0, 0));
-        APPEND(case_menu, menu_item(TM("menu.case.invert",   "_iNVERT cASE"),   G_CALLBACK(cb_case_invert),   NULL, NULL, 0, 0));
+        APPEND(case_menu, menu_item(TM("cmd.42016", "_UPPER CASE"),    G_CALLBACK(cb_case_upper),    NULL, NULL, 0, 0));
+        APPEND(case_menu, menu_item(TM("cmd.42017", "_lower case"),    G_CALLBACK(cb_case_lower),    NULL, NULL, 0, 0));
+        APPEND(case_menu, menu_item(TM("cmd.42067", "_Proper Case"),   G_CALLBACK(cb_case_proper),   NULL, NULL, 0, 0));
+        APPEND(case_menu, menu_item(TM("cmd.42069", "_Sentence case"), G_CALLBACK(cb_case_sentence), NULL, NULL, 0, 0));
+        APPEND(case_menu, menu_item(TM("cmd.42071", "_iNVERT cASE"),   G_CALLBACK(cb_case_invert),   NULL, NULL, 0, 0));
         APPEND(case_menu, menu_item(TM("menu.case.random",   "_rAnDoM cAsE"),   G_CALLBACK(cb_case_random),   NULL, NULL, 0, 0));
         APPEND(edit, case_item);
     }
 
     /* Comment / Uncomment submenu */
     {
-        GtkWidget *cmt_item = gtk_menu_item_new_with_mnemonic(TM("menu.comment", "C_omment/Uncomment"));
+        GtkWidget *cmt_item = gtk_menu_item_new_with_mnemonic(TM("submenu.edit-comment", "C_omment/Uncomment"));
         GtkWidget *cmt_menu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(cmt_item), cmt_menu);
-        APPEND(cmt_menu, smi("cmd.comment.line",  TM("menu.comment.line",  "Toggle _Single Line Comment"),
+        APPEND(cmt_menu, smi("cmd.comment.line",  TM("cmd.42022", "Toggle _Single Line Comment"),
                                     G_CALLBACK(cb_toggle_line_comment),  NULL, accel,
                                     GDK_KEY_k, GDK_CONTROL_MASK));
-        APPEND(cmt_menu, smi("cmd.comment.block", TM("menu.comment.block", "Toggle _Block Comment"),
+        APPEND(cmt_menu, smi("cmd.comment.block", TM("cmd.42023", "Toggle _Block Comment"),
                                     G_CALLBACK(cb_toggle_block_comment), NULL, accel,
                                     GDK_KEY_k, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
         APPEND(edit, cmt_item);
@@ -3340,11 +3340,11 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
     GtkWidget *search = submenu(bar, TM("menu.search", "_Search"));
     APPEND(search, smi("cmd.find",       TM("cmd.43001", "_Find…"),          G_CALLBACK(cb_find),         NULL, accel, GDK_KEY_f, GDK_CONTROL_MASK));
     APPEND(search, smi("cmd.replace",    TM("cmd.43003", "_Replace…"),       G_CALLBACK(cb_replace),      NULL, accel, GDK_KEY_h, GDK_CONTROL_MASK));
-    APPEND(search, smi("cmd.findinfiles",TM("cmd.findinfiles","Find in _Files…"), G_CALLBACK(cb_find_in_files), NULL, accel, GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
+    APPEND(search, smi("cmd.findinfiles",TM("cmd.43013","Find in _Files…"), G_CALLBACK(cb_find_in_files), NULL, accel, GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
     APPEND(search, smi("cmd.incrsearch", TM("cmd.43011", "Incremental Search…"), G_CALLBACK(cb_incr_search), NULL, accel, GDK_KEY_i, GDK_CONTROL_MASK));
     APPEND(search, sep_item());
-    APPEND(search, smi("cmd.findnext",   TM("cmd.findnext",  "Find _Next"),   G_CALLBACK(cb_find_next), NULL, accel, GDK_KEY_F3, 0));
-    APPEND(search, smi("cmd.findprev",   TM("cmd.findprev",  "Find _Prev"),   G_CALLBACK(cb_find_prev), NULL, accel, GDK_KEY_F3, GDK_SHIFT_MASK));
+    APPEND(search, smi("cmd.findnext",   TM("cmd.43002", "Find _Next"),   G_CALLBACK(cb_find_next), NULL, accel, GDK_KEY_F3, 0));
+    APPEND(search, smi("cmd.findprev",   TM("cmd.43010", "Find _Prev"),   G_CALLBACK(cb_find_prev), NULL, accel, GDK_KEY_F3, GDK_SHIFT_MASK));
     APPEND(search, sep_item());
     /* Change History submenu */
     {
@@ -3367,25 +3367,25 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
                        GDK_KEY_d, GDK_CONTROL_MASK | GDK_MOD1_MASK));
     APPEND(search, sep_item());
     APPEND(search, smi("cmd.goto",   TM("cmd.43004", "_Go To Line…"), G_CALLBACK(cb_goto),    NULL, accel, GDK_KEY_g, GDK_CONTROL_MASK));
-    APPEND(search, smi("cmd.brace",  TM("cmd.brace", "Go to _Matching Brace"), G_CALLBACK(cb_goto_matching_brace), NULL, accel, GDK_KEY_bracketright, GDK_CONTROL_MASK));
+    APPEND(search, smi("cmd.brace",  TM("cmd.43009", "Go to _Matching Brace"), G_CALLBACK(cb_goto_matching_brace), NULL, accel, GDK_KEY_bracketright, GDK_CONTROL_MASK));
     APPEND(search, sep_item());
-    APPEND(search, smi("cmd.bm.toggle", TM("menu.bm.toggle", "_Toggle Bookmark"),
+    APPEND(search, smi("cmd.bm.toggle", TM("cmd.43005", "_Toggle Bookmark"),
                              G_CALLBACK(cb_bookmark_toggle), NULL, accel,
                              GDK_KEY_F2, GDK_CONTROL_MASK));
-    APPEND(search, smi("cmd.bm.next",   TM("menu.bm.next", "_Next Bookmark"),
+    APPEND(search, smi("cmd.bm.next",   TM("cmd.43006", "_Next Bookmark"),
                              G_CALLBACK(cb_bookmark_next), NULL, accel,
                              GDK_KEY_F2, 0));
-    APPEND(search, smi("cmd.bm.prev",   TM("menu.bm.prev", "_Previous Bookmark"),
+    APPEND(search, smi("cmd.bm.prev",   TM("cmd.43007", "_Previous Bookmark"),
                              G_CALLBACK(cb_bookmark_prev), NULL, accel,
                              GDK_KEY_F2, GDK_SHIFT_MASK));
-    APPEND(search, menu_item(TM("menu.bm.clearall", "_Clear All Bookmarks"),
+    APPEND(search, menu_item(TM("cmd.43008", "_Clear All Bookmarks"),
                              G_CALLBACK(cb_bookmark_clear_all), NULL, NULL, 0, 0));
     APPEND(search, sep_item());
-    APPEND(search, menu_item(TM("menu.bm.cut",    "C_ut Bookmarked Lines"),
+    APPEND(search, menu_item(TM("cmd.43018", "C_ut Bookmarked Lines"),
                              G_CALLBACK(cb_bookmark_cut),    NULL, NULL, 0, 0));
-    APPEND(search, menu_item(TM("menu.bm.copy",   "Cop_y Bookmarked Lines"),
+    APPEND(search, menu_item(TM("cmd.43019", "Cop_y Bookmarked Lines"),
                              G_CALLBACK(cb_bookmark_copy),   NULL, NULL, 0, 0));
-    APPEND(search, menu_item(TM("menu.bm.delete", "_Delete Bookmarked Lines"),
+    APPEND(search, menu_item(TM("cmd.43021", "_Delete Bookmarked Lines"),
                              G_CALLBACK(cb_bookmark_delete), NULL, NULL, 0, 0));
     APPEND(search, sep_item());
 
@@ -3434,7 +3434,7 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
         GtkWidget *view = submenu(bar, TM("menu.view", "_View"));
 
         s_mi_wrap = gtk_check_menu_item_new_with_mnemonic(
-            TM("menu.view.wordwrap", "_Word Wrap"));
+            TM("cmd.44022", "_Word Wrap"));
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(s_mi_wrap), FALSE);
         g_signal_connect(s_mi_wrap, "toggled", G_CALLBACK(cb_toggle_word_wrap), NULL);
         gtk_accel_group_connect(accel, GDK_KEY_z, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE,
@@ -3444,13 +3444,13 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
         APPEND(view, sep_item());
 
         GtkWidget *ws = gtk_check_menu_item_new_with_mnemonic(
-            TM("menu.view.whitespace", "Show _Whitespace"));
+            TM("cmd.44025", "Show _Whitespace"));
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(ws), s_show_whitespace);
         g_signal_connect(ws, "toggled", G_CALLBACK(cb_toggle_whitespace), NULL);
         APPEND(view, ws);
 
         GtkWidget *eolm = gtk_check_menu_item_new_with_mnemonic(
-            TM("menu.view.eol", "Show _EOL Markers"));
+            TM("cmd.44026", "Show _EOL Markers"));
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(eolm), s_show_eol_marks);
         g_signal_connect(eolm, "toggled", G_CALLBACK(cb_toggle_eol_marks), NULL);
         APPEND(view, eolm);
@@ -3495,16 +3495,16 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(fold_item), fold_sub);
         APPEND(view, fold_item);
 
-        APPEND(fold_sub, menu_item(TM("menu.view.foldall",   "Fold _All"),
+        APPEND(fold_sub, menu_item(TM("cmd.44010", "Fold _All"),
                                    G_CALLBACK(cb_fold_all),   NULL, accel,
                                    GDK_KEY_F9, GDK_MOD1_MASK | GDK_CONTROL_MASK));
-        APPEND(fold_sub, menu_item(TM("menu.view.unfoldall", "_Unfold All"),
+        APPEND(fold_sub, menu_item(TM("cmd.44029", "_Unfold All"),
                                    G_CALLBACK(cb_unfold_all), NULL, accel,
                                    GDK_KEY_F9, GDK_MOD1_MASK | GDK_CONTROL_MASK | GDK_SHIFT_MASK));
         APPEND(fold_sub, sep_item());
-        APPEND(fold_sub, smi("cmd.fold.current",   TM("menu.view.foldcurrent",   "Fold _Current Level"),
+        APPEND(fold_sub, smi("cmd.fold.current",   TM("cmd.44030", "Fold _Current Level"),
                              G_CALLBACK(cb_fold_current),   NULL, accel, GDK_KEY_F9, GDK_CONTROL_MASK));
-        APPEND(fold_sub, smi("cmd.unfold.current", TM("menu.view.unfoldcurrent", "_Unfold Current Level"),
+        APPEND(fold_sub, smi("cmd.unfold.current", TM("cmd.44031", "_Unfold Current Level"),
                              G_CALLBACK(cb_unfold_current), NULL, accel, GDK_KEY_F9, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
 
         APPEND(fold_sub, sep_item());
@@ -3712,10 +3712,10 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
     GtkWidget *settings = submenu(bar, TM("menu.settings", "Se_ttings"));
     APPEND(settings, menu_item(TM("cmd.46001", "_Style Configurator…"),
                                G_CALLBACK(cb_style_editor), NULL, accel, 0, 0));
-    APPEND(settings, menu_item(T("cmd.shortcutmap", "_Shortcut Mapper…"),
+    APPEND(settings, menu_item(T("cmd.48009", "_Shortcut Mapper…"),
                                G_CALLBACK(cb_shortcut_mapper), NULL, accel, 0, 0));
     APPEND(settings, sep_item());
-    APPEND(settings, menu_item(TM("cmd.prefs", "_Preferences…"),
+    APPEND(settings, menu_item(TM("cmd.48011", "_Preferences…"),
                                G_CALLBACK(cb_preferences), NULL, accel, 0, 0));
     APPEND(settings, sep_item());
     /* Import submenu */
@@ -3755,17 +3755,17 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
     /* ---- Macro ---- */
     {
         GtkWidget *macro = submenu(bar, TM("menu.macro", "_Macro"));
-        APPEND(macro, smi("cmd.macro.start", TM("menu.macro.start", "Start _Recording"),
+        APPEND(macro, smi("cmd.macro.start", TM("cmd.42018", "Start _Recording"),
                           G_CALLBACK(cb_macro_start), NULL, accel,
                           GDK_KEY_r, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
-        APPEND(macro, smi("cmd.macro.stop",  TM("menu.macro.stop",  "S_top Recording"),
+        APPEND(macro, smi("cmd.macro.stop",  TM("cmd.42019", "S_top Recording"),
                           G_CALLBACK(cb_macro_stop),  NULL, accel,
                           GDK_KEY_r, GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK));
         APPEND(macro, sep_item());
-        APPEND(macro, smi("cmd.macro.play",  TM("menu.macro.play",  "_Playback"),
+        APPEND(macro, smi("cmd.macro.play",  TM("cmd.42021", "_Playback"),
                           G_CALLBACK(cb_macro_play),  NULL, accel,
                           GDK_KEY_p, GDK_CONTROL_MASK | GDK_SHIFT_MASK));
-        APPEND(macro, smi("cmd.macro.playn", TM("menu.macro.playn", "Run Macro _Multiple Times…"),
+        APPEND(macro, smi("cmd.macro.playn", TM("cmd.42032", "Run Macro _Multiple Times…"),
                           G_CALLBACK(cb_macro_play_n), NULL, accel,
                           GDK_KEY_p, GDK_MOD1_MASK | GDK_SHIFT_MASK));
         APPEND(macro, sep_item());
