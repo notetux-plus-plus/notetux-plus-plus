@@ -61,13 +61,28 @@ static void on_eb_realize(GtkWidget *w, gpointer d)
     if (cur) { gdk_window_set_cursor(win, cur); g_object_unref(cur); }
 }
 
+/* Return the triggering GdkEvent from a multi-press gesture. */
+static const GdkEvent *gesture_current_event(GtkGestureMultiPress *g)
+{
+    GdkEventSequence *seq =
+        gtk_gesture_single_get_current_sequence(GTK_GESTURE_SINGLE(g));
+    return gtk_gesture_get_last_event(GTK_GESTURE(g), seq);
+}
+
 static GtkWidget *clickable_wrap(GtkWidget *label, GCallback handler)
 {
     GtkWidget *eb = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(eb), label);
-    gtk_widget_add_events(eb, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect(eb, "realize",            G_CALLBACK(on_eb_realize), NULL);
-    g_signal_connect(eb, "button-press-event", handler,                   NULL);
+    g_signal_connect(eb, "realize", G_CALLBACK(on_eb_realize), NULL);
+
+    /* GtkGestureMultiPress works on both X11 and Wayland, unlike
+     * the old button-press-event + GtkEventBox combination. */
+    GtkGesture *gesture = gtk_gesture_multi_press_new(eb);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0); /* all buttons */
+    g_signal_connect(gesture, "pressed", handler, NULL);
+    /* Keep the gesture alive as long as the EventBox lives. */
+    g_object_set_data_full(G_OBJECT(eb), "gesture", gesture, g_object_unref);
+
     return eb;
 }
 
@@ -84,10 +99,10 @@ static void on_eol_item(GtkMenuItem *item, gpointer data)
     if (s_sci) statusbar_update_from_sci(s_sci);
 }
 
-static gboolean on_eol_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
+static void on_eol_click(GtkGestureMultiPress *g, gint n, gdouble x, gdouble y, gpointer d)
 {
-    (void)w; (void)d;
-    if (ev->button != 3) return FALSE;
+    (void)n; (void)x; (void)y; (void)d;
+    if (gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(g)) != 3) return;
     int cur = (int)smsg(SCI_GETEOLMODE, 0, 0);
     static const struct { const char *label; int mode; } items[] = {
         { "Windows (CRLF)", SC_EOL_CRLF },
@@ -103,8 +118,7 @@ static gboolean on_eol_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
                          GINT_TO_POINTER(items[i].mode));
     }
     gtk_widget_show_all(menu);
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)ev);
-    return TRUE;
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), gesture_current_event(g));
 }
 
 /* ------------------------------------------------------------------ */
@@ -118,10 +132,10 @@ static void on_ovr_item(GtkMenuItem *item, gpointer data)
     if (s_sci) statusbar_update_from_sci(s_sci);
 }
 
-static gboolean on_ovr_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
+static void on_ovr_click(GtkGestureMultiPress *g, gint n, gdouble x, gdouble y, gpointer d)
 {
-    (void)w; (void)d;
-    if (ev->button != 3) return FALSE;
+    (void)n; (void)x; (void)y; (void)d;
+    if (gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(g)) != 3) return;
     int cur = (int)smsg(SCI_GETOVERTYPE, 0, 0);
     static const struct { const char *label; int val; } items[] = {
         { "Insert (INS)",   0 },
@@ -136,8 +150,7 @@ static gboolean on_ovr_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
                          GINT_TO_POINTER(items[i].val));
     }
     gtk_widget_show_all(menu);
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)ev);
-    return TRUE;
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), gesture_current_event(g));
 }
 
 /* ------------------------------------------------------------------ */
@@ -159,10 +172,10 @@ static void on_indent_item(GtkMenuItem *item, gpointer data)
     if (s_sci) statusbar_update_from_sci(s_sci);
 }
 
-static gboolean on_indent_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
+static void on_indent_click(GtkGestureMultiPress *g, gint n, gdouble x, gdouble y, gpointer d)
 {
-    (void)w; (void)d;
-    if (ev->button != 3) return FALSE;
+    (void)n; (void)x; (void)y; (void)d;
+    if (gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(g)) != 3) return;
     int cur_tabs  = (int)smsg(SCI_GETUSETABS,  0, 0);
     int cur_width = (int)smsg(SCI_GETTABWIDTH, 0, 0);
 
@@ -200,8 +213,7 @@ static gboolean on_indent_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
     }
 
     gtk_widget_show_all(menu);
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)ev);
-    return TRUE;
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), gesture_current_event(g));
 }
 
 /* ------------------------------------------------------------------ */
@@ -214,10 +226,10 @@ static void on_enc_item(GtkMenuItem *item, gpointer data)
     if (s_enc_cb) s_enc_cb((const char *)data);
 }
 
-static gboolean on_enc_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
+static void on_enc_click(GtkGestureMultiPress *g, gint n, gdouble x, gdouble y, gpointer d)
 {
-    (void)w; (void)d;
-    if (ev->button != 3) return FALSE;
+    (void)n; (void)x; (void)y; (void)d;
+    if (gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(g)) != 3) return;
     const char *cur = gtk_label_get_text(GTK_LABEL(s_lbl_enc));
     GtkWidget *menu = gtk_menu_new();
     for (int i = 0; i < npp_encoding_count; i++) {
@@ -229,8 +241,7 @@ static gboolean on_enc_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
                          (gpointer)npp_encodings[i].display);
     }
     gtk_widget_show_all(menu);
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)ev);
-    return TRUE;
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), gesture_current_event(g));
 }
 
 /* ------------------------------------------------------------------ */
@@ -276,10 +287,10 @@ static void on_lang_item(GtkMenuItem *item, gpointer data)
     if (s_lang_cb) s_lang_cb((const char *)data);
 }
 
-static gboolean on_lang_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
+static void on_lang_click(GtkGestureMultiPress *g, gint n, gdouble x, gdouble y, gpointer d)
 {
-    (void)w; (void)d;
-    if (ev->button != 3) return FALSE;
+    (void)n; (void)x; (void)y; (void)d;
+    if (gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(g)) != 3) return;
     const char *cur = gtk_label_get_text(GTK_LABEL(s_lbl_lang));
     GtkWidget *menu = gtk_menu_new();
     for (const LangEntry *l = kCommonLangs; l->key || l->sep; l++) {
@@ -297,8 +308,7 @@ static gboolean on_lang_click(GtkWidget *w, GdkEventButton *ev, gpointer d)
         g_signal_connect(mi, "activate", G_CALLBACK(on_lang_item), (gpointer)l->key);
     }
     gtk_widget_show_all(menu);
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)ev);
-    return TRUE;
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), gesture_current_event(g));
 }
 
 /* ------------------------------------------------------------------ */
