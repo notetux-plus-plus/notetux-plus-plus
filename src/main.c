@@ -23,6 +23,7 @@
 #include "searchresults.h"
 #include "spell.h"
 #include "plugin.h"
+#include "lsp.h"
 #include "changehistory.h"
 #include "project.h"
 #include "run.h"
@@ -1132,6 +1133,31 @@ static void cb_toggle_spellcheck(GtkCheckMenuItem *item, gpointer d)
                                    SCI_INDICATORCLEARRANGE, 0, len);
         }
     }
+}
+
+/* ---- LSP actions ---- */
+static void cb_lsp_goto_def(GtkMenuItem *i, gpointer d)
+{
+    (void)i; (void)d;
+    NppDoc *doc = editor_current_doc();
+    if (doc && doc->filepath && doc->sci)
+        lsp_goto_definition(doc->sci, doc->filepath);
+}
+
+static void cb_lsp_hover(GtkMenuItem *i, gpointer d)
+{
+    (void)i; (void)d;
+    NppDoc *doc = editor_current_doc();
+    if (doc && doc->filepath && doc->sci)
+        lsp_hover(doc->sci, doc->filepath);
+}
+
+static void cb_lsp_rename(GtkMenuItem *i, gpointer d)
+{
+    (void)i; (void)d;
+    NppDoc *doc = editor_current_doc();
+    if (doc && doc->filepath && doc->sci)
+        lsp_rename(doc->sci, doc->filepath);
 }
 
 static void cb_open_folder_workspace(GtkMenuItem *i, gpointer d)
@@ -3751,6 +3777,22 @@ static GtkWidget *build_menubar(GtkWindow *window, GApplication *app)
                             G_CALLBACK(cb_ascii_to_hex), NULL, accel, 0, 0));
     APPEND(tools, menu_item(TM("menu.tools.hextoasc", "_Hex → ASCII"),
                             G_CALLBACK(cb_hex_to_ascii), NULL, accel, 0, 0));
+    APPEND(tools, sep_item());
+    {
+        GtkWidget *lsp_sub = gtk_menu_new();
+        GtkWidget *lsp_item = gtk_menu_item_new_with_label("LSP");
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(lsp_item), lsp_sub);
+        APPEND(tools, lsp_item);
+        APPEND(lsp_sub, smi("cmd.lsp.gotodef", "Go to _Definition",
+                            G_CALLBACK(cb_lsp_goto_def), NULL, accel,
+                            GDK_KEY_F12, 0));
+        APPEND(lsp_sub, smi("cmd.lsp.hover", "Show _Hover Info",
+                            G_CALLBACK(cb_lsp_hover), NULL, accel,
+                            GDK_KEY_F1, GDK_CONTROL_MASK));
+        APPEND(lsp_sub, smi("cmd.lsp.rename", "_Rename Symbol",
+                            G_CALLBACK(cb_lsp_rename), NULL, accel,
+                            GDK_KEY_F2, 0));
+    }
 
     /* ---- Macro ---- */
     {
@@ -3880,6 +3922,7 @@ static gboolean on_delete_event(GtkWidget *w, GdkEvent *e, gpointer app)
 {
     (void)w; (void)e;
     session_save();
+    lsp_shutdown();
     editor_close_all_quit(G_APPLICATION(app));
     return TRUE; /* prevent default destroy; quit handles it */
 }
@@ -3995,6 +4038,7 @@ static void on_activate(GtkApplication *app, gpointer data)
     gtk_box_pack_start(GTK_BOX(vbox), char_panel,     FALSE, FALSE, 0);
     backup_init();
     spell_init(window);
+    lsp_init(window);
 
     /* Status bar */
     GtkWidget *statusbar = statusbar_init();

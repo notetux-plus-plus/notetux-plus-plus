@@ -98,6 +98,8 @@ add_executable(notetux++
     src/pluginsadmin.c
     src/cliphistory.c
     src/charpanel.c
+    src/lsp.c
+    src/lsp_json.c
     src/lexilla_bridge.cpp
 )
 

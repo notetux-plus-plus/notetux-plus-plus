@@ -16,6 +16,7 @@
 #include "docmap.h"
 #include "spell.h"
 #include "plugin.h"
+#include "lsp.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -487,6 +488,8 @@ static void on_sci_notify(GtkWidget *sci, gint unused,
         }
         funclist_schedule_update(sci);
         spell_schedule_check(sci);
+        if (!s_loading_file && doc->filepath)
+            lsp_doc_change(sci, doc->filepath);
     } else if (code == SCN_MACRORECORD) {
         macro_on_record((unsigned int)n->message, n->wParam, n->lParam);
     }
@@ -854,6 +857,10 @@ gboolean editor_open_path(const char *path)
     main_recent_file_add(path);
     main_doclist_refresh();
     gitgutter_update(sci, path);
+    {
+        const char *lang_id = (const char *)g_object_get_data(G_OBJECT(sci), "npp-lang");
+        if (lang_id) lsp_doc_open(sci, path, lang_id);
+    }
     filewatch_start(cur);
     return TRUE;
 }
@@ -930,6 +937,7 @@ static gboolean save_doc_to_path(NppDoc *doc, const char *path)
         refresh_tab_label(gtk_notebook_page_num(GTK_NOTEBOOK(s_notebook), doc->sci));
     }
     gitgutter_update(doc->sci, path);
+    lsp_doc_save(path);
     return TRUE;
 }
 
@@ -1005,6 +1013,7 @@ gboolean editor_close_page(int page)
 
     filewatch_stop(doc);
     backup_clean(doc);
+    if (doc->filepath) lsp_doc_close(doc->filepath);
     gtk_notebook_remove_page(GTK_NOTEBOOK(s_notebook), page);
     g_free(doc->filepath);
     g_free(doc->encoding);

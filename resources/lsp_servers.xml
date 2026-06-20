@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  LSP server configuration for Notetux++
+  Copy this file to ~/.config/notetux/lsp_servers.xml and enable the servers
+  you have installed.
+
+  Attributes:
+    lang   — Notetux language ID (same key as used by lexer.c, e.g. "c", "cpp", "python")
+    cmd    — executable name or full path
+    args   — optional extra arguments (space-separated)
+
+  Multiple <Server> entries with different lang values are supported.
+  Comment out servers you do not have installed.
+-->
+<LSPServers>
+
+  <!-- C and C++: install with  apt install clangd  or  dnf install clang-tools-extra -->
+  <!-- <Server lang="c"   cmd="clangd" args="--background-index --clang-tidy"/> -->
+  <!-- <Server lang="cpp" cmd="clangd" args="--background-index --clang-tidy"/> -->
+
+  <!-- Python: install with  pip install python-lsp-server -->
+  <!-- <Server lang="python" cmd="pylsp"/> -->
+
+  <!-- Rust: install with  rustup component add rust-analyzer -->
+  <!-- <Server lang="rust" cmd="rust-analyzer"/> -->
+
+  <!-- Go: install with  go install golang.org/x/tools/gopls@latest -->
+  <!-- <Server lang="go" cmd="gopls"/> -->
+
+  <!-- TypeScript/JavaScript: install with  npm install -g typescript-language-server typescript -->
+  <!-- <Server lang="typescript" cmd="typescript-language-server" args="--stdio"/> -->
+  <!-- <Server lang="javascript" cmd="typescript-language-server" args="--stdio"/> -->
+
+  <!-- Lua: install with  luarocks install lua-language-server -->
+  <!-- <Server lang="lua" cmd="lua-language-server"/> -->
+
+  <!-- Bash: install with  npm install -g bash-language-server -->
+  <!-- <Server lang="bash" cmd="bash-language-server" args="start"/> -->
+
+</LSPServers>
