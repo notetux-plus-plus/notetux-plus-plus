@@ -117,6 +117,7 @@ add_library(scintilla_c STATIC
     "${SCI_C_ROOT}/UniConversion.c"
     "${SCI_C_ROOT}/SplitVector.c"
     "${SCI_C_ROOT}/Partitioning.c"
+    "${SCI_C_ROOT}/RunStyles.c"
     "${SCI_C_ROOT}/UndoHistory.c"
     "${SCI_C_ROOT}/ChangeHistory.c"
     "${SCI_C_ROOT}/CellBuffer.c"
