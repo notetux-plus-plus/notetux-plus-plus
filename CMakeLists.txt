@@ -103,6 +103,31 @@ add_executable(notetux++
     src/lexilla_bridge.cpp
 )
 
+# -----------------------------------------------------------------------------
+# scintilla_c — pure-C translation of Scintilla core (experimental)
+# This is the educational C-conversion branch.  The library is built but not
+# yet linked into notetux++ (the original C++ Scintilla is still used at
+# runtime).  Wired here so the build validates all translation files compile.
+# -----------------------------------------------------------------------------
+set(SCI_C_ROOT "${CMAKE_SOURCE_DIR}/scintilla_c/src")
+
+add_library(scintilla_c STATIC
+    "${SCI_C_ROOT}/CharacterType.c"
+    "${SCI_C_ROOT}/CharClassify.c"
+    "${SCI_C_ROOT}/UniConversion.c"
+    "${SCI_C_ROOT}/SplitVector.c"
+    "${SCI_C_ROOT}/Partitioning.c"
+    "${SCI_C_ROOT}/UndoHistory.c"
+    "${SCI_C_ROOT}/ChangeHistory.c"
+    "${SCI_C_ROOT}/CellBuffer.c"
+)
+
+target_include_directories(scintilla_c PUBLIC "${SCI_C_ROOT}")
+
+target_compile_options(scintilla_c PRIVATE
+    -Wall -Wextra -Wpedantic
+)
+
 target_include_directories(notetux++ PRIVATE
     "${SCI_ROOT}/include"
     "${SCI_ROOT}/src"
