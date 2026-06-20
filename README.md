@@ -84,6 +84,7 @@ The macOS port and this Linux port share a common foundation: both macOS and Lin
 - **Search Results panel** — View → Panels → Search Results (also auto-shown after every Find in Files search) toggles a dockable bottom panel; three-level `GtkTreeStore`: search root row ("Search "needle" — N matches in M files") → file rows ("path (N hits)") → hit rows ("line: text"); results accumulate across multiple searches without being cleared; double-clicking a hit row opens the file and jumps to that line; a Clear button wipes all accumulated results; the panel lives in a vertical `GtkPaned` below the main editor area; hidden by default, shown automatically when a Find in Files search returns results
 - **Spell checker** — Settings → Spell Check enables inline spell checking; `libenchant-2` loaded at runtime via `dlopen` (gracefully disabled if not installed); dictionary selected from system locale (`LC_MESSAGES`) with fallback to base language; misspelled words underlined with a red squiggle (Scintilla indicator 8, `INDIC_SQUIGGLE`); UTF-8-aware word walker skips words under 3 characters and all-uppercase acronyms; full-document pass limited to 200 KB, debounced 1200 ms after each edit; right-clicking a misspelled word shows a context menu with up to 8 suggestions (click to replace), "Ignore Word" (session), and "Add to Dictionary" (permanent)
 - **Plugin system** — plugins are native Linux shared libraries (`.so`) placed in `~/.config/notetux/plugins/<Name>/<Name>.so`; each plugin exports five standard symbols (`getName`, `getFuncsArray`, `beNotified`, `messageProc`, `isUnicode`) plus an optional `setInfo(NppData)` to receive host handles and a host-message callback; the host calls `beNotified` on every Scintilla editor event; plugins query the host via `NppData.hostMsg(NPPM_*, ...)` — supported messages: `NPPM_GETCURRENTSCINTILLA`, `NPPM_GETNBOPENFILES`, `NPPM_GETFULLCURRENTPATH`, `NPPM_GETFILENAME`, `NPPM_GETDIRECTORYPATH`; each plugin's functions appear as a submenu under the Plugins menu; separator items (`"-"`) and checkbox items (`init2Check != 0`) are supported; a minimal example plugin is provided in `example_plugin/HelloPlugin/`
+- **LSP (Language Server Protocol)** — Tools → LSP submenu provides IDE-grade intelligence for any language with a standard LSP server: **Go to Definition** (F12) jumps to the symbol's declaration, opening the file if needed; **Hover** (Ctrl+F1) shows inline documentation in a `GtkPopover`; **Rename Symbol** (F2) prompts for a new name and applies workspace-wide edits via the server; real-time **diagnostics** paint red squiggles for errors and orange squiggles for warnings as you type; pure JSON-RPC 2.0 transport over `GSubprocess` stdin/stdout pipes; one server process per language shared across all files of that language; no build-time dependency on any language server — all servers are optional and started on demand; configure servers in `~/.config/notetux/lsp_servers.xml` (template shipped in `resources/lsp_servers.xml`); works with `clangd` (C/C++), `pylsp` (Python), `rust-analyzer` (Rust), `gopls` (Go), `typescript-language-server` (TypeScript/JavaScript), and any other LSP-compliant server
 
 ### Localisation
 - Automatic system locale detection via GLib (`g_get_language_names()`)
@@ -174,6 +175,7 @@ Ordered by implementation effort (low → high). The core editing experience is 
 | ~~68~~ | ~~Plugins Admin dialog~~ ✓ | Scan installed plugins; Install from file; Uninstall; restart notice |
 | ~~69~~ | ~~Clipboard History panel~~ ✓ | `owner-change` tracking; rolling 20-entry GQueue; double-click pastes into editor |
 | ~~70~~ | ~~Character Panel~~ ✓ | 49-block Unicode browser; 16-wide grid; U+ search; insert on click; UTF-8 detail card |
+| ~~71~~ | ~~LSP client~~ ✓ | JSON-RPC 2.0 over GSubprocess pipes; diagnostics squiggles; Go to Definition / Hover / Rename; config in `lsp_servers.xml` |
 
 ## Release packaging
 
@@ -222,6 +224,7 @@ All user data lives in `~/.config/notetux/`:
 | `~/.config/notetux/backup/` | Auto-backup copies of unsaved/modified documents |
 | `~/.config/notetux/userDefineLangs/` | User-defined language XML files (NPP UDL format) |
 | `~/.config/notetux/plugins/` | Plugin directory; each plugin lives in `<Name>/<Name>.so` |
+| `~/.config/notetux/lsp_servers.xml` | LSP server configuration: maps language IDs to server commands (copy from `resources/lsp_servers.xml`) |
 
 ## Architecture
 
@@ -249,6 +252,8 @@ src/docmap.c/h        — Document Map panel: shared-document minimap ScintillaW
 src/searchresults.c/h — Search Results panel: 3-level GtkTreeStore, fed from findinfiles, bottom-docked
 src/spell.c/h         — Spell checker: dlopen enchant-2, indicator squiggle, right-click suggestions
 src/plugin.c/h        — Plugin system: .so loader, NppData/hostMsg, beNotified broadcast, NPPM routing, menu generation
+src/lsp.c/h           — LSP client: JSON-RPC 2.0 transport, server lifecycle, diagnostics, definition/hover/rename
+src/lsp_json.c/h      — Minimal JSON builder (JsonBuf) and recursive-descent parser (json_parse) for LSP messages
 src/sci_c.h           — C-safe Scintilla interface
 
 scintilla/            — vendored editing engine (GTK3 backend used as-is)
