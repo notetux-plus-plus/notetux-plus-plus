@@ -137,6 +137,211 @@ Changes to vendored code should be minimal and clearly marked so they survive up
 
 ---
 
+## C Conversion Project (branch: `c-conversion`)
+
+**Mission:** translate every `.cxx` file in Scintilla and Lexilla to clean C11 and delete `lexilla_bridge.cpp`. When done, Notetux++ will be a pure C11 project with zero C++ anywhere.
+
+All translated files live in `scintilla_c/src/` (Scintilla) and will live in `lexilla_c/` (Lexilla, to be created). Every new `.c` file must be added to the corresponding CMake `add_library()` target before each session ends — do this automatically without being asked.
+
+---
+
+### Established translation patterns
+
+**X-macro / include-multiple-times template**
+C++ `template<typename T>` data structures → a pair of `.h` files:
+- `foo_tpl.h` — declares struct + function signatures using `#define FOO_STRUCT`, `#define FOO_FN(fn)` etc.
+- `foo_impl.h` — implements every function as `static` (private helpers) or non-static (public)
+
+A driver `.h` defines the concrete macros, includes `foo_tpl.h`, then undefines them (repeated N times). A driver `.c` includes `foo_impl.h` N times the same way.
+
+Existing examples: `sv_tpl.h`/`sv_impl.h`/`SplitVector.c`, `pt_tpl.h`/`pt_impl.h`/`Partitioning.c`, `rs_tpl.h`/`rs_impl.h`/`RunStyles.c`.
+
+**C vtable pattern**
+C++ pure-virtual class → C vtable:
+```c
+typedef struct {
+    void (*method1)(struct Foo *self, ...);
+    int  (*method2)(const struct Foo *self);
+} Foo_vtbl;
+
+typedef struct Foo {
+    const Foo_vtbl *vtbl;   /* must be FIRST */
+    /* concrete fields follow */
+} Foo;
+```
+Concrete subtypes cast safely to `Foo *` because `vtbl` is the first member. Static vtable instances eliminate all heap vtable allocations.
+
+Existing example: `PerLine_vtbl` / `ILineVector_vtbl` in `CellBuffer.h`/`CellBuffer.c`.
+
+**Opaque stub pattern**
+When a file has complex dependencies not yet translated, expose it as an opaque `typedef struct Foo Foo;` with all function declarations pointing to `assert(!"stub"); abort()` bodies. CellBuffer.c compiles and links while UndoHistory and ChangeHistory are still stubs.
+
+**Two-parameter X-macro**
+`template<D, S>` → 3-level macro concatenation:
+```c
+#define _RS_CAT3(a,b,c) _RS_CAT(_RS_CAT(a,b),c)
+#define RS_STRUCT        _RS_CAT3(RunStyles_, RS_DS, _RS_CAT(_, RS_SS))
+```
+Produces names like `RunStyles_Int_Char`. See `RunStyles.h`.
+
+**`std::string` → `char *` + explicit length**
+For stable, non-growing strings: `SciStringView = { const char *ptr; size_t len; }`.
+For owned mutable strings: `char *buf; size_t len; size_t cap;` — grow with `realloc`.
+
+**`std::vector<T>` → heap array**
+```c
+T *items; int count; int cap;
+/* realloc when count == cap */
+```
+
+**`std::map<K,V>` → sorted array + binary search**
+For read-mostly maps (e.g. lexer registries): `KVPair arr[N]; int n;` sorted by key, searched with `bsearch`.
+
+**`if constexpr (std::is_convertible_v<A*,B*>)` → two concrete functions**
+When the condition resolves to a constant for each template instantiation, write two functions directly (see `LV32_InsertLines` vs `LV64_InsertLines` in `CellBuffer.c`).
+
+**`[[fallthrough]]` → implicit (no annotation needed in C11)**
+**`nullptr` → `NULL`**
+**`bool`/`true`/`false` → `int`/`1`/`0`**
+**`constexpr` → `static const` or `enum`**
+**`noexcept` / `[[nodiscard]]` → remove**
+**`throw std::runtime_error(…)` → `assert(!"message"); abort()`**
+**`auto` → explicit type**
+**Range-based `for` → explicit index or pointer loop**
+
+---
+
+### Scintilla translation checklist (`scintilla_c/src/`)
+
+**Phase 1 — Data structures (foundation for everything else)**
+
+- [x] `CharacterType.c` — done
+- [x] `CharClassify.c` — done
+- [x] `UniConversion.c` — done
+- [x] `SplitVector.c` — done (X-macro, 3 instantiations: Char, Int, PD)
+- [x] `Partitioning.c` — done (X-macro, 2 instantiations: Int, PD)
+- [x] `RunStyles.c` — done (X-macro, 4 instantiations: Int×Int, Int×Char, PD×Int, PD×Char)
+- [x] `CellBuffer.c` — done (LineVector32/64 vtable, LineStartIndex, full CellBuffer)
+- [ ] `UndoHistory.c` — **stub only**; full translation needed
+  - Replace `ScaledVector` (a `std::vector<uint8_t>` with a base pointer + separate sizes for char/short/int) with a C struct: `uint8_t *buf; int len; int cap; int stride;`
+  - Replace `ScrapStack` (a `std::string` used as a byte stack) with `char *; size_t top; size_t cap;`
+  - Replace `std::optional<int>` with `int value; int has_value;`
+  - Replace `std::vector<UndoActionType>` with a heap array
+- [ ] `SparseVector.c` — **not started**; needed by ChangeHistory
+  - Template `SparseVector<T>` → X-macro like SplitVector; instantiations: Int, PD (possibly Char too)
+  - `SparseVector` = a RunStyles-backed store where only explicitly set positions differ from a default
+- [ ] `ChangeHistory.c` — **stub only**; full translation needed after SparseVector + RunStyles confirmed
+  - Depends on `SparseVector`, `RunStyles_Int_Int`, `RunStyles_PD_Int`
+
+**Phase 2 — Character/type utilities**
+
+- [ ] `CaseConvert.c` — large static table + lookup functions; no templates; straightforward
+- [ ] `CaseFolder.c` — depends on CaseConvert; simple wrapper functions
+- [ ] `CharacterCategoryMap.c` — Unicode category table (very large static array); no templates
+- [ ] `DBCS.c` — double-byte character set range checks; trivial
+- [ ] `UniqueString.c` — string interning; replace `std::unique_ptr<const char[]>` with `malloc`/`free` pair
+
+**Phase 3 — Geometry and style primitives**
+
+- [ ] `Geometry.c` — Point, PRectangle, Colour structs + arithmetic helpers; pure C++ style but all trivial
+- [ ] `XPM.c` — XPM pixmap parser; replace `std::string`/`std::vector` with fixed-size char arrays
+- [ ] `Indicator.c` — indicator visual properties; few methods, no templates
+- [ ] `LineMarker.c` — margin marker shapes + XPM rendering; depends on Geometry + XPM
+- [ ] `Style.c` — font/color/bold/italic record; pure data, no templates
+
+**Phase 4 — Selection, keys, popups**
+
+- [ ] `Selection.c` — `SelectionRange` + `Selection` multi-caret model; replace `std::vector<SelectionRange>` with heap array
+- [ ] `KeyMap.c` — key→command table; replace `std::vector<KeyToCommand>` with static sorted array
+- [ ] `AutoComplete.c` — Scintilla's popup list widget (not our `src/autocomplete.c`); replace `std::string`/`std::vector` with `malloc` buffers
+- [ ] `CallTip.c` — calltip popup; replace `std::string` with `char *` buffer
+
+**Phase 5 — Document model**
+
+- [ ] `PerLine.c` — per-line stores (LineLevels, LineState, LineAnnotation, LineTabstops, LineMarkers); each wraps `SplitVector_Int` or `SplitVector_PD`
+- [ ] `Decoration.c` — indicator/decoration storage; uses `RunStyles` + linked list; replace `std::unique_ptr` with explicit `malloc`/`free`
+- [ ] `RESearch.c` — Scintilla's built-in regex engine; minimal STL use; closest to pure C already
+- [ ] `ContractionState.c` — fold state (visible ↔ document line mapping); uses `SplitVector` + `RunStyles`; translate two template instantiations
+- [ ] `Document.c` — **largest/most complex file**; uses CellBuffer, PerLine, Decoration, ContractionState, RESearch, CharacterCategoryMap; replace all `std::vector`/`std::string`/`std::map`; translate `Watcher*` observer pattern to a C function-pointer array
+
+**Phase 6 — View and rendering**
+
+- [ ] `ViewStyle.c` — visual style properties (fonts, colors, margins); replace `std::vector<Style>`/`std::vector<MarginStyle>` with fixed arrays (margins ≤ 5)
+- [ ] `PositionCache.c` — text layout cache; replace `std::vector<PositionCacheEntry>` with heap array + open-addressing hash table
+- [ ] `EditModel.c` — connects Document to the view; mostly delegation, minimal templates
+- [ ] `MarginView.c` — paints margins; depends on ViewStyle + LineMarker + Document
+- [ ] `EditView.c` — paints text, handles wrap + indicators; replace `std::vector<TextSegment>` with heap array
+
+**Phase 7 — Editor core**
+
+- [ ] `Editor.c` — ≈ 8 000 lines, all editing operations and event dispatch; replace every `std::vector`/`std::string` temporary
+- [ ] `ScintillaBase.c` — autocomplete + calltip integration; depends on AutoComplete + CallTip + Editor
+
+**Phase 8 — GTK3 backend**
+
+- [ ] `PlatGTK.c` — GTK3 platform (Pango fonts, Cairo graphics, clipboard, IME); Pango/Cairo API is already C; replace internal `std::string`/`std::vector`
+- [ ] `ScintillaGTK.c` — GTK3 widget: GObject type, event handlers, IME, drag-and-drop; ≈ 4 000 lines
+- [ ] `ScintillaGTKAccessible.c` — AT-SPI accessibility; mostly GObject boilerplate close to C
+
+**After Phase 8:** delete `lexilla_bridge.cpp` and remove it from `CMakeLists.txt`.
+
+---
+
+### Lexilla translation checklist
+
+Lexilla's translated files will live in `lexilla_c/` (mirror of `lexilla/`). Create a `lexilla_c` CMake `add_library()` target once the first file is ready.
+
+**Phase 9 — Lexlib (12 files)**
+
+- [ ] `CharacterCategory.c` — Unicode category table; trivial
+- [ ] `CharacterSet.c` — character membership; replace `std::initializer_list` constructors with array initializers
+- [ ] `PropSetSimple.c` — key=value store; replace `std::map<std::string,std::string>` with sorted `KVPair` array
+- [ ] `WordList.c` — sorted keyword list; replace `std::vector<std::string>` with `char **` array
+- [ ] `InList.c` — fast `IsInList` check; depends on WordList
+- [ ] `Accessor.c` — document byte accessor (wraps Scintilla doc pointer); trivial
+- [ ] `LexAccessor.c` — run-length styled buffer; depends on Accessor
+- [ ] `StyleContext.c` — stateful lexer context; depends on LexAccessor
+- [ ] `DefaultLexer.c` — base vtable for all lexers; translate `ILexer5` C++ interface to `LexerVtbl` C struct (same pattern as `PerLine_vtbl`)
+- [ ] `LexerBase.c` — shared base for registered lexers; depends on DefaultLexer
+- [ ] `LexerModule.c` — lexer registry; replace `std::vector<LexerModule>` with static array
+- [ ] `LexerSimple.c` — simple single-function lexer wrapper; depends on LexerBase
+
+**Phase 10 — Lexilla entry point**
+
+- [ ] `Lexilla.c` (`lexilla/src/`) — `CreateLexer()` factory; replace `std::map<std::string, LexerModule *>` with sorted static array; **this is the file that eliminates `lexilla_bridge.cpp`**
+
+**Phase 11 — Lexers (128 files, `lexilla/lexers/`)**
+
+Apply the same mechanical substitutions to every file. Suggested order:
+
+*Tier 1 — minimal C++ (no STL containers, < 200 lines):*
+`LexNull`, `LexBatch`, `LexDiff`, `LexProps`, `LexMake`, `LexErrorList`, `LexConf`, `LexRegistry`, `LexCrontab`, `LexSearchResult`
+
+*Tier 2 — moderate C++ (200–500 lines, few `std::string` uses):*
+`LexAsm`, `LexBash`, `LexCmake`, `LexCSS`, `LexJSON`, `LexMarkdown`, `LexTOML`, `LexYAML`, `LexSQL`, `LexLua`, `LexRuby`, `LexPerl`, `LexPascal`, `LexAda`, `LexFortran`, `LexD`, `LexErlang`, `LexHaskell`, `LexRust`, `LexGDScript`, `LexPython`, `LexR`, `LexZig`, `LexNim`, `LexGAP`, `LexJulia`
+
+*Tier 3 — heavier C++ (500–1000 lines, multiple STL uses):*
+`LexBasic`, `LexVB`, `LexMySQL`, `LexPOV`, `LexTeX`, `LexLisp`, `LexLaTeX`, `LexCaml`, `LexFSharp`, `LexVHDL`, `LexVerilog`, `LexMatlab`, `LexObjC`, `LexCOBOL`, `LexForth`, `LexPS`, `LexSML`, `LexModula`, `LexProgress`, `LexPB`, `LexAVS`, `LexBaan`, `LexCLW`, `LexEiffel`, `LexKix`, `LexRebol`, `LexSmalltalk`, `LexTCL`, `LexAsn1`
+
+*Tier 4 — complex (> 1000 lines or multi-language state machines):*
+`LexCPP` (C, C++, C#, Java, JS, TS via mode flags), `LexHTML` (HTML + embedded JS/CSS/VBScript/PHP), `LexUser` (UDL engine — already understood from `src/udl.c`)
+
+All remaining lexers (LexA68k, LexAbaqus, LexAPDL, LexASY, LexAU3, LexAVE, LexBibTeX, LexBullant, LexCIL, LexCoffeeScript, LexCsound, LexDart, LexDataflex, LexDMAP, LexDMIS, LexECL, LexEDIFACT, LexEScript, LexEscSeq, LexFlagship, LexGui4Cli, LexHex, LexHollywood, LexIndent, LexInno, LexKVIrc, LexLout, LexMagik, LexMaxima, LexMetapost, LexMMIXAL, LexMPT, LexMSSQL, LexNix, LexNsis, LexOpal, LexOScript, LexPLM, LexPO, LexPowerPro, LexPowerShell, LexRaku, LexSAS, LexScriptol, LexSINEX, LexSML, LexSorcus, LexSpecman, LexSpice, LexStata, LexSTTXT, LexTACL, LexTADS3, LexTAL, LexTCMD, LexTroff, LexTxt2tags, LexX12, LexNimrod) — tackle in any order after Tier 1–3.
+
+---
+
+### Rules for every translation session
+
+1. Read the original `.cxx` file and the corresponding `.h` before starting.
+2. Produce `.h` first (types, structs, function declarations), then `.c` (implementations).
+3. Private helpers → `static` functions in the `.c` file (never exposed in `.h`).
+4. When a file is done, immediately add its `.c` to the CMake target. Never leave CMake out of sync.
+5. After adding to CMake, run `cmake --build build --target scintilla_c` (or `lexilla_c`) and fix all warnings before declaring the file done.
+6. Update this checklist (mark `[x]`) in the same commit that adds the file to CMake.
+7. Stubs are acceptable for files with unresolved dependencies — mark them as stubs in the checklist and in the `.c` file header.
+
+---
+
 ## Next steps (priority / effort order)
 
 ### High effort

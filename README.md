@@ -226,6 +226,185 @@ All user data lives in `~/.config/notetux/`:
 | `~/.config/notetux/plugins/` | Plugin directory; each plugin lives in `<Name>/<Name>.so` |
 | `~/.config/notetux/lsp_servers.xml` | LSP server configuration: maps language IDs to server commands (copy from `resources/lsp_servers.xml`) |
 
+## The Pure-C Engine (branch: `c-conversion`)
+
+Notetux++ is a C11 application at every layer except one: the vendored **Scintilla** editing engine and **Lexilla** syntax-highlighting library are written in C++. A thin bridge file (`lexilla_bridge.cpp`) currently wraps the C++ `CreateLexer()` entry point so the rest of the codebase can reach it from C. This branch removes that compromise permanently.
+
+**The goal:** translate every `.cxx` file in Scintilla (34 files) and Lexilla (141 files — 12 lexlib, 1 entry point, 128 lexers) into clean C11. When the last file is done, `lexilla_bridge.cpp` is deleted and Notetux++ becomes a pure C project with zero C++ anywhere.
+
+**Why:**
+- A C editor has no C++ ABI fragility, no hidden allocations from STL containers, no template bloat in the binary, and no `undefined behaviour` hiding behind constructor/destructor pairs you did not write.
+- Any C11 compiler on any platform that has GTK3 can build the whole thing. No `g++`, no `-std=c++17`, no `cstdint` workarounds.
+- The resulting binary is leaner and the build is faster.
+- The codebase is readable by any programmer who knows C — a much larger group than those who fluently read modern C++.
+
+**Current state:**
+
+The translated files live in `scintilla_c/src/` and are compiled into a static library (`libscintilla_c.a`) by CMake. The library compiles clean but is not yet linked into the running editor — the original C++ Scintilla is still used at runtime. The C translation is validated on every build.
+
+| File | Status | Notes |
+|------|--------|-------|
+| `CharacterType.c` | ✓ done | trivial, no templates |
+| `CharClassify.c` | ✓ done | lookup table, no templates |
+| `UniConversion.c` | ✓ done | UTF-8 classifier, lead-byte table |
+| `SplitVector.c` | ✓ done | gap buffer — X-macro template (Char, Int, PD) |
+| `Partitioning.c` | ✓ done | run-length partition tree — X-macro template (Int, PD) |
+| `RunStyles.c` | ✓ done | run-length style store — X-macro template (Int×Int, Int×Char, PD×Int, PD×Char) |
+| `CellBuffer.c` | ✓ done | gap buffer + line index (LineVector32/64 vtable, LineStartIndex) |
+| `UndoHistory.c` | stub | skeleton only — full translation pending (needs ScaledVector, ScrapStack) |
+| `ChangeHistory.c` | stub | skeleton only — full translation pending (needs SparseVector, RunStyles) |
+
+**Translation steps (ordered by dependency):**
+
+Each step below produces one or more `.c`/`.h` files in `scintilla_c/src/` (Scintilla) or `lexilla_c/` (Lexilla). Add every new `.c` file to the `scintilla_c` or `lexilla_c` CMake target after translation.
+
+---
+
+### Phase 1 — Scintilla core (data structures)
+
+1. **`SparseVector`** (template → X-macro, like SplitVector/Partitioning)
+   — needed by ChangeHistory; produce `SparseVector.h` + `SparseVector.c`
+
+2. **`UndoHistory.cxx`** (full translation)
+   — replace `std::vector<uint8_t>` with a `ScaledVector` C struct (pointer + len + cap);
+   replace `std::string` (ScrapStack) with a `char *` growable buffer;
+   replace `std::optional` with a struct + `int has_value` flag
+
+3. **`ChangeHistory.cxx`** (full translation)
+   — uses RunStyles + SparseVector; translate every method, remove `std::vector` instances
+
+---
+
+### Phase 2 — Scintilla core (character/type utilities)
+
+4. **`CaseConvert.cxx`** — Unicode case conversion tables; no templates, straightforward
+5. **`CaseFolder.cxx`** — case folding; depends on CaseConvert
+6. **`CharacterCategoryMap.cxx`** — Unicode category lookup; large static table, no templates
+7. **`DBCS.cxx`** — double-byte character set helpers; trivial
+8. **`UniqueString.cxx`** — string interning; replace `std::unique_ptr<const char[]>` with `malloc`/`free` + sorted array
+
+---
+
+### Phase 3 — Scintilla core (geometry and style primitives)
+
+9. **`Geometry.cxx`** — Point, PRectangle, Colour structs; pure C++ style but trivial to convert
+10. **`XPM.cxx`** — XPM pixmap parser; replace `std::string`/`std::vector` with fixed-size buffers
+11. **`Indicator.cxx`** — indicator visual properties; few methods, no templates
+12. **`LineMarker.cxx`** — margin marker shapes + XPM rendering; depends on Geometry + XPM
+13. **`Style.cxx`** — font/color/bold/italic record; pure data, no templates
+
+---
+
+### Phase 4 — Scintilla core (selection, keys, widgets)
+
+14. **`Selection.cxx`** — `SelectionRange` + `Selection` multi-caret model; replace `std::vector<SelectionRange>` with a heap array
+15. **`KeyMap.cxx`** — key→command table; replace `std::vector<KeyToCommand>` with a static array + linear search
+16. **`AutoComplete.cxx`** — autocomplete list (the Scintilla popup, not our `src/autocomplete.c`); replace `std::string`/`std::vector` with malloc buffers
+17. **`CallTip.cxx`** — calltip popup; replace `std::string` with a char* buffer
+
+---
+
+### Phase 5 — Scintilla core (document model)
+
+18. **`PerLine.cxx`** — per-line data stores (LineLevels, LineState, LineAnnotation, LineTabstops, LineMarkers); each is a SplitVector-backed array; translate to C using the existing `SplitVector_Int` instances
+19. **`Decoration.cxx`** — indicator/decoration storage; uses `RunStyles` + a linked list of `Decoration` objects; replace `std::unique_ptr` with explicit `malloc`/`free`, linked list with `next` pointer
+20. **`RESearch.cxx`** — regex search (custom POSIX-style engine inside Scintilla); no STL templates; mostly pointer arithmetic — nearest to pure C already
+21. **`ContractionState.cxx`** — code folding state (visible-line ↔ document-line mapping); uses `SplitVector` + `RunStyles`; two template instantiations to concretize
+22. **`Document.cxx`** — **the central document model** (largest file); uses CellBuffer, PerLine, Decoration, ContractionState, RESearch, CharacterCategoryMap; replace every `std::vector`/`std::string`/`std::map` with equivalent C heap arrays; translate all `Watcher*` callbacks to a C function-pointer array
+
+---
+
+### Phase 6 — Scintilla view and rendering
+
+23. **`ViewStyle.cxx`** — all visual style properties (fonts, colors, margins, indicators); replace `std::vector<Style>`/`std::vector<MarginStyle>` with fixed-capacity arrays (margins are always ≤ 5)
+24. **`PositionCache.cxx`** — text layout cache; replace `std::vector<PositionCacheEntry>` with a heap array + hash-table (open addressing)
+25. **`EditModel.cxx`** — bridges Document to the view layer; mostly method delegation, minimal templates
+26. **`MarginView.cxx`** — paints margin markers, line numbers, fold indicators; depends on ViewStyle + LineMarker + Document
+27. **`EditView.cxx`** — paints text, handles word wrap, selection highlighting, indicators; largest view file; replace `std::vector<TextSegment>` with a heap array
+
+---
+
+### Phase 7 — Scintilla editor core
+
+28. **`Editor.cxx`** — **all editing operations and event handling** (≈ 8 000 lines, the most complex file); translate every method; replace `std::vector<SelectionRange>` uses with heap arrays; all `std::string` temporaries → `char *` + `malloc`/`free`
+29. **`ScintillaBase.cxx`** — autocomplete + calltip integration wired into the editor event loop; depends on AutoComplete + CallTip + Editor
+
+---
+
+### Phase 8 — Scintilla GTK3 backend
+
+30. **`PlatGTK.cxx`** — GTK3 platform layer (Pango fonts, Cairo graphics, clipboard, IME); every `std::string` → `char *`; every `std::vector` → heap array; Pango API calls are pure C already
+31. **`ScintillaGTK.cxx`** — GTK3 widget: GObject type, event handlers, IME, drag-and-drop; largest GTK file (≈ 4 000 lines)
+32. **`ScintillaGTKAccessible.cxx`** — AT-SPI accessibility provider; mostly GObject boilerplate already close to C
+
+After Phase 8: **delete `lexilla_bridge.cpp` and `src/lexilla_bridge.cpp`**. The Scintilla GTK widget can now be reached entirely from C via `scintilla_send_message()`.
+
+---
+
+### Phase 9 — Lexilla library layer (`lexilla/lexlib/`)
+
+Translate in dependency order (each file is a standalone module):
+
+33. `CharacterCategory.cxx` — Unicode category table (large static array, trivial)
+34. `CharacterSet.cxx` — fast character membership test; replace `std::initializer_list` constructors with explicit array initializers
+35. `PropSetSimple.cxx` — key=value property store; replace `std::map<std::string, std::string>` with a sorted `char **` array + binary search
+36. `WordList.cxx` — sorted keyword list; replace `std::vector<std::string>` with a `char **` array
+37. `InList.cxx` — fast `IsInList` check; depends on WordList
+38. `Accessor.cxx` — document byte accessor (wraps the Scintilla document pointer)
+39. `LexAccessor.cxx` — lexer's read interface (run-length styled buffer); depends on Accessor
+40. `StyleContext.cxx` — stateful lexer context (current/previous character + style); depends on LexAccessor
+41. `DefaultLexer.cxx` — base vtable implementation for all lexers; translate `ILexer5` C++ interface to a `LexerVtbl` C struct (same vtable pattern used for `PerLine`/`ILineVector` in CellBuffer.c)
+42. `LexerBase.cxx` — shared base for module-registered lexers; depends on DefaultLexer
+43. `LexerModule.cxx` — lexer registry (`LexerModule::Fn` function pointer table); replace `std::vector<LexerModule>` with a static array
+44. `LexerSimple.cxx` — simple single-function lexer wrapper; depends on LexerBase
+
+**Lexilla entry point:**
+
+45. `Lexilla.cxx` (`lexilla/src/`) — `CreateLexer()` factory; translate the `std::map<std::string, LexerModule *>` registry to a sorted `char *` → function-pointer array; this is the file whose C++ bridge (`lexilla_bridge.cpp`) we are eliminating
+
+---
+
+### Phase 10 — Lexilla lexers (`lexilla/lexers/`, 128 files)
+
+Each lexer is independent. A mechanical translation pass applies the same substitutions to every file:
+
+- Every `class Lex* : public DefaultLexer` → C struct with a `LexerVtbl *vtbl` as first member + a static vtable instance
+- `std::string` → `char *` + explicit `malloc`/`free` (or a `LexStr` typedef from a shared header)
+- `std::vector<T>` → `T *` heap array + `int count` + `int cap`
+- `std::map<K,V>` → sorted `KVPair` array + binary search
+- Range-based `for (auto x : container)` → explicit index or pointer loop
+- `auto` → the concrete type
+- `[[nodiscard]]`, `constexpr`, `noexcept` → remove (or `static inline` for `constexpr`)
+- `nullptr` → `NULL`
+- `bool` → `int` (or `_Bool`)
+- `true`/`false` → `1`/`0`
+
+Suggested translation order (simplest → most complex):
+
+**Tier 1 — minimal C++ (< 200 lines, no STL containers):**
+`LexNull`, `LexBatch`, `LexDiff`, `LexProps`, `LexMake`, `LexErrorList`, `LexConf`, `LexRegistry`, `LexCrontab`, `LexSearchResult`
+
+**Tier 2 — moderate C++ (200–500 lines, one or two `std::string` uses):**
+`LexAsm`, `LexBash`, `LexCmake`, `LexCSS`, `LexJSON`, `LexMarkdown`, `LexTOML`, `LexYAML`, `LexSQL`, `LexLua`, `LexRuby`, `LexPerl`, `LexPascal`, `LexAda`, `LexFortran`, `LexD`, `LexErlang`, `LexHaskell`, `LexRust`, `LexGDScript`, `LexPython`, `LexR`
+
+**Tier 3 — heavier C++ (500–1000 lines, multiple STL uses or internal classes):**
+`LexCPP`, `LexHTML`, `LexJava`-equivalent (`LexCPP` covers Java), `LexBasic`, `LexVB`, `LexMySQL`, `LexPOV`, `LexTeX`, `LexLisp`, `LexLaTeX`, `LexCaml`, `LexFSharp`, `LexVHDL`, `LexVerilog`, `LexMatlab`, `LexObjC`
+
+**Tier 4 — complex (> 1000 lines or heavy internal state machines):**
+`LexHTML` (multi-language: HTML + embedded JS/CSS/VBScript/PHP), `LexUser` (UDL engine — already partially understood from `src/udl.c`), `LexCPP` (handles C, C++, C#, Java, JavaScript, TypeScript via mode flags)
+
+---
+
+### Build the C translation target
+
+```sh
+cmake -B build && cmake --build build --target scintilla_c
+```
+
+This compiles `libscintilla_c.a` containing all translated files. The library is not yet linked into the running `notetux++` binary — the original C++ Scintilla is still used. Once all files in Phases 1–8 are done, swap the link target in `CMakeLists.txt`.
+
+---
+
 ## Architecture
 
 ```
