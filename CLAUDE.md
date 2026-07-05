@@ -230,7 +230,7 @@ When the condition resolves to a constant for each template instantiation, write
 
 - [x] `CaseConvert.c` — done; three static tables (symmetricRanges, symmetricSingletons, complexCaseConversions pipe-delimited string); CaseConverter build→sort→parallel-array pattern; `std::sort` → `qsort`; `std::lower_bound` → manual binary search; `ICaseConverter` vtable via `offsetof` back-pointer; `UnicodeFromUTF8` + `UTF8FromUTF32Character` added to UniConversion
 - [x] `CaseFolder.c` — done; C vtable pattern for CaseFolder base; CaseFolderTable (256-byte ASCII mapping, init from Sci_MakeLowerCase); CaseFolderUnicode (single-byte via table, multi-byte via ICaseConverter); static vtable instances, no heap allocation
-- [ ] `CharacterCategoryMap.c` — Unicode category table (very large static array); no templates
+- [x] `CharacterCategoryMap.c` — done; catRanges[] table copied verbatim (auto-generated, 4100+ entries); binary search lower_bound_int replaces std::lower_bound; std::clamp/std::min → macros; std::vector<unsigned char> dense → malloc/realloc; enum class OtherID → plain enum; UAX #31 IsIdStart/Continue/XidStart/XidContinue translated
 - [ ] `DBCS.c` — double-byte character set range checks; trivial
 - [ ] `UniqueString.c` — string interning; replace `std::unique_ptr<const char[]>` with `malloc`/`free` pair
 
