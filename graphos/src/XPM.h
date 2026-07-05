@@ -26,21 +26,7 @@
 #define XPM_C_H
 
 #include <stddef.h>
-#include "Geometry.h"
-
-/* ── Minimal Surface interface (extended by Platform.c, Phase 8) ─────── */
-typedef struct Surface Surface;
-
-typedef struct {
-    void (*FillRectangle)(Surface *self, PRectangle rc, ColourRGBA colour);
-    /* Platform.c adds more entries here */
-} Surface_vtbl;
-
-struct Surface { const Surface_vtbl *vtbl; /* must be first */ };
-
-static inline void Surface_FillRectangle(Surface *self, PRectangle rc, ColourRGBA colour) {
-    self->vtbl->FillRectangle(self, rc, colour);
-}
+#include "Surface.h"
 
 /* ── XPM ─────────────────────────────────────────────────────────────── */
 typedef struct {
