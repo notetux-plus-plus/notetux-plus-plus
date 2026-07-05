@@ -128,6 +128,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/DBCS.c"
     "${GRAPHOS_ROOT}/UniqueString.c"
     "${GRAPHOS_ROOT}/Geometry.c"
+    "${GRAPHOS_ROOT}/XPM.c"
 )
 
 target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
