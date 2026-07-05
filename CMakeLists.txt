@@ -118,6 +118,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/SplitVector.c"
     "${GRAPHOS_ROOT}/Partitioning.c"
     "${GRAPHOS_ROOT}/RunStyles.c"
+    "${GRAPHOS_ROOT}/SparseVector.c"
     "${GRAPHOS_ROOT}/UndoHistory.c"
     "${GRAPHOS_ROOT}/ChangeHistory.c"
     "${GRAPHOS_ROOT}/CellBuffer.c"

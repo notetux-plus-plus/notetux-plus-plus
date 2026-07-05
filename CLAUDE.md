@@ -227,9 +227,7 @@ When the condition resolves to a constant for each template instantiation, write
   - Replace `ScrapStack` (a `std::string` used as a byte stack) with `char *; size_t top; size_t cap;`
   - Replace `std::optional<int>` with `int value; int has_value;`
   - Replace `std::vector<UndoActionType>` with a heap array
-- [ ] `SparseVector.c` — **not started**; needed by ChangeHistory
-  - Template `SparseVector<T>` → X-macro like SplitVector; instantiations: Int, PD (possibly Char too)
-  - `SparseVector` = a RunStyles-backed store where only explicitly set positions differ from a default
+- [x] `SparseVector.c` — done; single concrete type `SparseVector_Ptr` (void * values, Partitioning_PD positions); `SplitVector_Ptr` (void *) added as 4th SplitVector instantiation
 - [ ] `ChangeHistory.c` — **stub only**; full translation needed after SparseVector + RunStyles confirmed
   - Depends on `SparseVector`, `RunStyles_Int_Int`, `RunStyles_PD_Int`
 
