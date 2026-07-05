@@ -228,7 +228,7 @@ When the condition resolves to a constant for each template instantiation, write
 
 **Phase 2 — Character/type utilities**
 
-- [ ] `CaseConvert.c` — large static table + lookup functions; no templates; straightforward
+- [x] `CaseConvert.c` — done; three static tables (symmetricRanges, symmetricSingletons, complexCaseConversions pipe-delimited string); CaseConverter build→sort→parallel-array pattern; `std::sort` → `qsort`; `std::lower_bound` → manual binary search; `ICaseConverter` vtable via `offsetof` back-pointer; `UnicodeFromUTF8` + `UTF8FromUTF32Character` added to UniConversion
 - [ ] `CaseFolder.c` — depends on CaseConvert; simple wrapper functions
 - [ ] `CharacterCategoryMap.c` — Unicode category table (very large static array); no templates
 - [ ] `DBCS.c` — double-byte character set range checks; trivial
