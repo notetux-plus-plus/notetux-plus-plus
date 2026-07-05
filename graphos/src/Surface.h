@@ -146,6 +146,14 @@ static inline void       Surface_SetClip        (Surface *s, PRectangle rc)     
 static inline void       Surface_PopClip        (Surface *s)                    { s->vtbl->PopClip(s); }
 static inline void       Surface_FlushCachedState(Surface *s)                   { s->vtbl->FlushCachedState(s); }
 static inline void       Surface_FlushDrawing   (Surface *s)                    { s->vtbl->FlushDrawing(s); }
+static inline void       Surface_DrawTextNoClip      (Surface *s, PRectangle rc, Font *f, XYPOSITION yb, const char *t, size_t l, ColourRGBA fore, ColourRGBA back) { s->vtbl->DrawTextNoClip(s,rc,f,yb,t,l,fore,back); }
+static inline void       Surface_DrawTextClipped     (Surface *s, PRectangle rc, Font *f, XYPOSITION yb, const char *t, size_t l, ColourRGBA fore, ColourRGBA back) { s->vtbl->DrawTextClipped(s,rc,f,yb,t,l,fore,back); }
+static inline void       Surface_DrawTextTransparent (Surface *s, PRectangle rc, Font *f, XYPOSITION yb, const char *t, size_t l, ColourRGBA fore) { s->vtbl->DrawTextTransparent(s,rc,f,yb,t,l,fore); }
+static inline void       Surface_DrawTextNoClipUTF8  (Surface *s, PRectangle rc, Font *f, XYPOSITION yb, const char *t, size_t l, ColourRGBA fore, ColourRGBA back) { s->vtbl->DrawTextNoClipUTF8(s,rc,f,yb,t,l,fore,back); }
+static inline void       Surface_DrawTextClippedUTF8 (Surface *s, PRectangle rc, Font *f, XYPOSITION yb, const char *t, size_t l, ColourRGBA fore, ColourRGBA back) { s->vtbl->DrawTextClippedUTF8(s,rc,f,yb,t,l,fore,back); }
+static inline void       Surface_DrawTextTransparentUTF8(Surface *s, PRectangle rc, Font *f, XYPOSITION yb, const char *t, size_t l, ColourRGBA fore) { s->vtbl->DrawTextTransparentUTF8(s,rc,f,yb,t,l,fore); }
+static inline void       Surface_MeasureWidths        (Surface *s, Font *f, const char *t, size_t l, XYPOSITION *pos) { s->vtbl->MeasureWidths(s,f,t,l,pos); }
+static inline void       Surface_MeasureWidthsUTF8    (Surface *s, Font *f, const char *t, size_t l, XYPOSITION *pos) { s->vtbl->MeasureWidthsUTF8(s,f,t,l,pos); }
 static inline XYPOSITION Surface_WidthText      (Surface *s, Font *f, const char *t, size_t l) { return s->vtbl->WidthText(s,f,t,l); }
 static inline XYPOSITION Surface_WidthTextUTF8  (Surface *s, Font *f, const char *t, size_t l) { return s->vtbl->WidthTextUTF8(s,f,t,l); }
 static inline XYPOSITION Surface_Ascent         (Surface *s, Font *f)           { return s->vtbl->Ascent(s,f); }
