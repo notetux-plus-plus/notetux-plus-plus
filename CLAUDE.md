@@ -240,7 +240,7 @@ When the condition resolves to a constant for each template instantiation, write
 - [x] `XPM.c` — XPM pixmap parser; replace `std::string`/`std::vector` with fixed-size char arrays
 - [x] `Indicator.c` — indicator visual properties; few methods, no templates
 - [x] `LineMarker.c` — margin marker shapes + XPM rendering; depends on Geometry + XPM
-- [ ] `Style.c` — font/color/bold/italic record; pure data, no templates
+- [x] `Style.c` — font/color/bold/italic record; pure data, no templates
 
 **Phase 4 — Selection, keys, popups**
 
