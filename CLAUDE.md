@@ -224,8 +224,7 @@ When the condition resolves to a constant for each template instantiation, write
 - [x] `CellBuffer.c` — done (LineVector32/64 vtable, LineStartIndex, full CellBuffer)
 - [x] `UndoHistory.c` — done; ScaledVector (variable-width byte array, expand-on-overflow), UndoActions (parallel arrays), ScrapStack (growable text scrap buffer), UndoHistory (undo/redo controller with save/tentative/detach points); `std::optional<int>` → `int value + int value_set`; `std::unique_ptr<ScrapStack>` → heap `ScrapStack *scraps`; `UndoHistory_create()`/`UndoHistory_destroy()` for CellBuffer's heap-owned usage
 - [x] `SparseVector.c` — done; single concrete type `SparseVector_Ptr` (void * values, Partitioning_PD positions); `SplitVector_Ptr` (void *) added as 4th SplitVector instantiation
-- [ ] `ChangeHistory.c` — **stub only**; full translation needed after SparseVector + RunStyles confirmed
-  - Depends on `SparseVector`, `RunStyles_Int_Int`, `RunStyles_PD_Int`
+- [x] `ChangeHistory.c` — done; EditionSet (heap array of EditionCount), ChangeStack (two heap arrays: steps + ChangeSpan), ChangeLog (ChangeStack + RunStyles_PD_Int + SparseVector_Ptr), ChangeHistory (two ChangeLogs + historicEpoch); `std::unique_ptr<EditionSet>` → `EditionSet *`; `std::unique_ptr<ChangeLog>` → `ChangeLog *`; `enum class Direction` → `int` macros
 
 **Phase 2 — Character/type utilities**
 
