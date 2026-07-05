@@ -131,6 +131,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/XPM.c"
     "${GRAPHOS_ROOT}/Indicator.c"
     "${GRAPHOS_ROOT}/LineMarker.c"
+    "${GRAPHOS_ROOT}/Style.c"
 )
 
 target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
