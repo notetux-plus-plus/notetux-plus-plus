@@ -141,7 +141,7 @@ Changes to vendored code should be minimal and clearly marked so they survive up
 
 **Mission:** translate every `.cxx` file in Scintilla and Lexilla to clean C11 and delete `lexilla_bridge.cpp`. When done, Notetux++ will be a pure C11 project with zero C++ anywhere.
 
-All translated files live in `scintilla_c/src/` (Scintilla) and will live in `lexilla_c/` (Lexilla, to be created). Every new `.c` file must be added to the corresponding CMake `add_library()` target before each session ends — do this automatically without being asked.
+All translated files live in `graphos/src/` (Graphos — the C translation of Scintilla) and will live in `lexicon/` (Lexicon — the C translation of Lexilla, to be created). Every new `.c` file must be added to the corresponding CMake `add_library()` target before each session ends — do this automatically without being asked.
 
 ---
 
@@ -211,7 +211,7 @@ When the condition resolves to a constant for each template instantiation, write
 
 ---
 
-### Scintilla translation checklist (`scintilla_c/src/`)
+### Graphos translation checklist (`graphos/src/` — C translation of Scintilla)
 
 **Phase 1 — Data structures (foundation for everything else)**
 
@@ -289,7 +289,7 @@ When the condition resolves to a constant for each template instantiation, write
 
 ### Lexilla translation checklist
 
-Lexilla's translated files will live in `lexilla_c/` (mirror of `lexilla/`). Create a `lexilla_c` CMake `add_library()` target once the first file is ready.
+Lexicon's translated files will live in `lexicon/` (mirror of `lexilla/`). Create a `lexicon` CMake `add_library()` target once the first file is ready.
 
 **Phase 9 — Lexlib (12 files)**
 
@@ -336,7 +336,7 @@ All remaining lexers (LexA68k, LexAbaqus, LexAPDL, LexASY, LexAU3, LexAVE, LexBi
 2. Produce `.h` first (types, structs, function declarations), then `.c` (implementations).
 3. Private helpers → `static` functions in the `.c` file (never exposed in `.h`).
 4. When a file is done, immediately add its `.c` to the CMake target. Never leave CMake out of sync.
-5. After adding to CMake, run `cmake --build build --target scintilla_c` (or `lexilla_c`) and fix all warnings before declaring the file done.
+5. After adding to CMake, run `cmake --build build --target graphos` (or `lexicon`) and fix all warnings before declaring the file done.
 6. Update this checklist (mark `[x]`) in the same commit that adds the file to CMake.
 7. Stubs are acceptable for files with unresolved dependencies — mark them as stubs in the checklist and in the `.c` file header.
 

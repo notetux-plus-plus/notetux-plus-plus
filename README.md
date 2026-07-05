@@ -226,9 +226,11 @@ All user data lives in `~/.config/notetux/`:
 | `~/.config/notetux/plugins/` | Plugin directory; each plugin lives in `<Name>/<Name>.so` |
 | `~/.config/notetux/lsp_servers.xml` | LSP server configuration: maps language IDs to server commands (copy from `resources/lsp_servers.xml`) |
 
-## The Pure-C Engine (branch: `c-conversion`)
+## Graphos and Lexicon (branch: `c-conversion`)
 
 Notetux++ is a C11 application at every layer except one: the vendored **Scintilla** editing engine and **Lexilla** syntax-highlighting library are written in C++. A thin bridge file (`lexilla_bridge.cpp`) currently wraps the C++ `CreateLexer()` entry point so the rest of the codebase can reach it from C. This branch removes that compromise permanently.
+
+The C translations have their own names: **Graphos** (from Greek *γράφος*, writing/tracing — the C translation of Scintilla) and **Lexicon** (from Greek *λεξικόν* — the C translation of Lexilla). The vendored C++ originals in `scintilla/` and `lexilla/` remain untouched; the translations build in parallel in `graphos/` and `lexicon/`.
 
 **The goal:** translate every `.cxx` file in Scintilla (34 files) and Lexilla (141 files — 12 lexlib, 1 entry point, 128 lexers) into clean C11. When the last file is done, `lexilla_bridge.cpp` is deleted and Notetux++ becomes a pure C project with zero C++ anywhere.
 
@@ -240,7 +242,7 @@ Notetux++ is a C11 application at every layer except one: the vendored **Scintil
 
 **Current state:**
 
-The translated files live in `scintilla_c/src/` and are compiled into a static library (`libscintilla_c.a`) by CMake. The library compiles clean but is not yet linked into the running editor — the original C++ Scintilla is still used at runtime. The C translation is validated on every build.
+The translated files live in `graphos/src/` and are compiled into a static library (`libgraphos.a`) by CMake. The library compiles clean but is not yet linked into the running editor — the original C++ Scintilla is still used at runtime. The C translation is validated on every build.
 
 | File | Status | Notes |
 |------|--------|-------|
@@ -256,7 +258,7 @@ The translated files live in `scintilla_c/src/` and are compiled into a static l
 
 **Translation steps (ordered by dependency):**
 
-Each step below produces one or more `.c`/`.h` files in `scintilla_c/src/` (Scintilla) or `lexilla_c/` (Lexilla). Add every new `.c` file to the `scintilla_c` or `lexilla_c` CMake target after translation.
+Each step below produces one or more `.c`/`.h` files in `graphos/src/` (Graphos) or `lexicon/` (Lexicon). Add every new `.c` file to the `graphos` or `lexicon` CMake target after translation.
 
 ---
 
@@ -398,10 +400,10 @@ Suggested translation order (simplest → most complex):
 ### Build the C translation target
 
 ```sh
-cmake -B build && cmake --build build --target scintilla_c
+cmake -B build && cmake --build build --target graphos
 ```
 
-This compiles `libscintilla_c.a` containing all translated files. The library is not yet linked into the running `notetux++` binary — the original C++ Scintilla is still used. Once all files in Phases 1–8 are done, swap the link target in `CMakeLists.txt`.
+This compiles `libgraphos.a` containing all translated files. The library is not yet linked into the running `notetux++` binary — the original C++ Scintilla is still used. Once all files in Phases 1–8 are done, swap the link target in `CMakeLists.txt`.
 
 ---
 

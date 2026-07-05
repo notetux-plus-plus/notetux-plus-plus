@@ -76,6 +76,8 @@ Notetux++ was born as a C11 application. The UI layer is C. The configuration la
 
 On the `c-conversion` branch, that botheration becomes a project.
 
+The C translations have names of their own: **Graphos** (from Greek *γράφος*, writing — the C translation of Scintilla) and **Lexicon** (from Greek *λεξικόν* — the C translation of Lexilla). They are not forks of the originals. They are the same logic, the same algorithms, the same data structures — written in a language that does not require a committee's approval to understand.
+
 The goal is to translate every `.cxx` file in Scintilla and Lexilla — all 34 Scintilla source files, 12 Lexilla library files, 1 Lexilla entry point, and 128 lexers — into clean, idiomatic C11. No C++ at all. Not a single translation unit. The `lexilla_bridge.cpp` wrapper will be deleted, not replaced. The result will be a single, self-contained C project that compiles with any C11-compliant compiler on any platform that has a C toolchain and a GTK3 installation.
 
 This is not purely an educational exercise, though it begins as one. It is the path to a production goal: an editor that is blazingly fast because it wastes nothing on object machinery, that is portable because it carries no C++ ABI fragility, that is maintainable because any programmer who knows C — and that is most programmers, everywhere, at every level — can read and modify it without first learning what `std::enable_if_t` is or why `decltype(auto)` exists.

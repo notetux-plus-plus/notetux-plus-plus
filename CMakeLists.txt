@@ -104,28 +104,28 @@ add_executable(notetux++
 )
 
 # -----------------------------------------------------------------------------
-# scintilla_c — pure-C translation of Scintilla core (experimental)
-# This is the educational C-conversion branch.  The library is built but not
-# yet linked into notetux++ (the original C++ Scintilla is still used at
-# runtime).  Wired here so the build validates all translation files compile.
+# graphos — pure-C translation of Scintilla (the editing engine)
+# Built but not yet linked into notetux++ — the original C++ Scintilla is still
+# used at runtime.  Wired here so every translation file is compile-validated.
+# When all phases are complete, graphos replaces scintilla in the link step.
 # -----------------------------------------------------------------------------
-set(SCI_C_ROOT "${CMAKE_SOURCE_DIR}/scintilla_c/src")
+set(GRAPHOS_ROOT "${CMAKE_SOURCE_DIR}/graphos/src")
 
-add_library(scintilla_c STATIC
-    "${SCI_C_ROOT}/CharacterType.c"
-    "${SCI_C_ROOT}/CharClassify.c"
-    "${SCI_C_ROOT}/UniConversion.c"
-    "${SCI_C_ROOT}/SplitVector.c"
-    "${SCI_C_ROOT}/Partitioning.c"
-    "${SCI_C_ROOT}/RunStyles.c"
-    "${SCI_C_ROOT}/UndoHistory.c"
-    "${SCI_C_ROOT}/ChangeHistory.c"
-    "${SCI_C_ROOT}/CellBuffer.c"
+add_library(graphos STATIC
+    "${GRAPHOS_ROOT}/CharacterType.c"
+    "${GRAPHOS_ROOT}/CharClassify.c"
+    "${GRAPHOS_ROOT}/UniConversion.c"
+    "${GRAPHOS_ROOT}/SplitVector.c"
+    "${GRAPHOS_ROOT}/Partitioning.c"
+    "${GRAPHOS_ROOT}/RunStyles.c"
+    "${GRAPHOS_ROOT}/UndoHistory.c"
+    "${GRAPHOS_ROOT}/ChangeHistory.c"
+    "${GRAPHOS_ROOT}/CellBuffer.c"
 )
 
-target_include_directories(scintilla_c PUBLIC "${SCI_C_ROOT}")
+target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
 
-target_compile_options(scintilla_c PRIVATE
+target_compile_options(graphos PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
