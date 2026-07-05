@@ -126,6 +126,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/CaseFolder.c"
     "${GRAPHOS_ROOT}/CharacterCategoryMap.c"
     "${GRAPHOS_ROOT}/DBCS.c"
+    "${GRAPHOS_ROOT}/UniqueString.c"
 )
 
 target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
