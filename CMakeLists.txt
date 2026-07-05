@@ -123,6 +123,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/ChangeHistory.c"
     "${GRAPHOS_ROOT}/CellBuffer.c"
     "${GRAPHOS_ROOT}/CaseConvert.c"
+    "${GRAPHOS_ROOT}/CaseFolder.c"
 )
 
 target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
