@@ -129,6 +129,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/UniqueString.c"
     "${GRAPHOS_ROOT}/Geometry.c"
     "${GRAPHOS_ROOT}/XPM.c"
+    "${GRAPHOS_ROOT}/Indicator.c"
 )
 
 target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
