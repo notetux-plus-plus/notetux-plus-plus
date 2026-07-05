@@ -222,11 +222,7 @@ When the condition resolves to a constant for each template instantiation, write
 - [x] `Partitioning.c` — done (X-macro, 2 instantiations: Int, PD)
 - [x] `RunStyles.c` — done (X-macro, 4 instantiations: Int×Int, Int×Char, PD×Int, PD×Char)
 - [x] `CellBuffer.c` — done (LineVector32/64 vtable, LineStartIndex, full CellBuffer)
-- [ ] `UndoHistory.c` — **stub only**; full translation needed
-  - Replace `ScaledVector` (a `std::vector<uint8_t>` with a base pointer + separate sizes for char/short/int) with a C struct: `uint8_t *buf; int len; int cap; int stride;`
-  - Replace `ScrapStack` (a `std::string` used as a byte stack) with `char *; size_t top; size_t cap;`
-  - Replace `std::optional<int>` with `int value; int has_value;`
-  - Replace `std::vector<UndoActionType>` with a heap array
+- [x] `UndoHistory.c` — done; ScaledVector (variable-width byte array, expand-on-overflow), UndoActions (parallel arrays), ScrapStack (growable text scrap buffer), UndoHistory (undo/redo controller with save/tentative/detach points); `std::optional<int>` → `int value + int value_set`; `std::unique_ptr<ScrapStack>` → heap `ScrapStack *scraps`; `UndoHistory_create()`/`UndoHistory_destroy()` for CellBuffer's heap-owned usage
 - [x] `SparseVector.c` — done; single concrete type `SparseVector_Ptr` (void * values, Partitioning_PD positions); `SplitVector_Ptr` (void *) added as 4th SplitVector instantiation
 - [ ] `ChangeHistory.c` — **stub only**; full translation needed after SparseVector + RunStyles confirmed
   - Depends on `SparseVector`, `RunStyles_Int_Int`, `RunStyles_PD_Int`
