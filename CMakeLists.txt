@@ -124,6 +124,7 @@ add_library(graphos STATIC
     "${GRAPHOS_ROOT}/CellBuffer.c"
     "${GRAPHOS_ROOT}/CaseConvert.c"
     "${GRAPHOS_ROOT}/CaseFolder.c"
+    "${GRAPHOS_ROOT}/CharacterCategoryMap.c"
 )
 
 target_include_directories(graphos PUBLIC "${GRAPHOS_ROOT}")
