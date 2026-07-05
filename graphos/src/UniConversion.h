@@ -67,4 +67,18 @@ int  UTF8Classify(const unsigned char *us, size_t len);
 int  UTF8Classify_char(const char *s, size_t len);
 int  UTF8IsValid(const char *s, size_t len);
 
+/* Decode the first code point from a UTF-8 byte sequence (inline for speed). */
+static inline int UnicodeFromUTF8(const unsigned char *us) {
+    switch (UTF8BytesOfLead[us[0]]) {
+    case 1: return us[0];
+    case 2: return ((us[0] & 0x1F) << 6)  + (us[1] & 0x3F);
+    case 3: return ((us[0] & 0x0F) << 12) + ((us[1] & 0x3F) << 6) + (us[2] & 0x3F);
+    default:return ((us[0] & 0x07) << 18) + ((us[1] & 0x3F) << 12)
+                   + ((us[2] & 0x3F) << 6) + (us[3] & 0x3F);
+    }
+}
+
+/* Encode a single Unicode code point as UTF-8; NUL-terminates putf. */
+void UTF8FromUTF32Character(int uch, char *putf);
+
 #endif /* UNICONVERSION_C_H */

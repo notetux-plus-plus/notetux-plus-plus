@@ -1,6 +1,6 @@
 /* Scintilla source code edit control
  * UniConversion.c — C translation of scintilla/src/UniConversion.cxx
- *                   (subset needed by CellBuffer.c)
+ *                   (subset needed by CellBuffer.c + CaseConvert.c)
  *
  * Translated functions:
  *   UTF8BytesOfLead[] table
@@ -119,4 +119,24 @@ int UTF8IsValid(const char *s, size_t len) {
         remaining -= (size_t)lenChar;
     }
     return 1;
+}
+
+void UTF8FromUTF32Character(int uch, char *putf) {
+    size_t k = 0;
+    if (uch < 0x80) {
+        putf[k++] = (char)uch;
+    } else if (uch < 0x800) {
+        putf[k++] = (char)(0xC0 | (uch >> 6));
+        putf[k++] = (char)(0x80 | (uch & 0x3F));
+    } else if (uch < 0x10000) {
+        putf[k++] = (char)(0xE0 | (uch >> 12));
+        putf[k++] = (char)(0x80 | ((uch >> 6) & 0x3F));
+        putf[k++] = (char)(0x80 | (uch & 0x3F));
+    } else {
+        putf[k++] = (char)(0xF0 | (uch >> 18));
+        putf[k++] = (char)(0x80 | ((uch >> 12) & 0x3F));
+        putf[k++] = (char)(0x80 | ((uch >> 6)  & 0x3F));
+        putf[k++] = (char)(0x80 | (uch & 0x3F));
+    }
+    putf[k] = '\0';
 }
