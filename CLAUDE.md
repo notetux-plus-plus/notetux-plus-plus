@@ -239,7 +239,7 @@ When the condition resolves to a constant for each template instantiation, write
 - [x] `Geometry.c` — Point, PRectangle, Colour structs + arithmetic helpers; pure C++ style but all trivial
 - [x] `XPM.c` — XPM pixmap parser; replace `std::string`/`std::vector` with fixed-size char arrays
 - [x] `Indicator.c` — indicator visual properties; few methods, no templates
-- [ ] `LineMarker.c` — margin marker shapes + XPM rendering; depends on Geometry + XPM
+- [x] `LineMarker.c` — margin marker shapes + XPM rendering; depends on Geometry + XPM
 - [ ] `Style.c` — font/color/bold/italic record; pure data, no templates
 
 **Phase 4 — Selection, keys, popups**
