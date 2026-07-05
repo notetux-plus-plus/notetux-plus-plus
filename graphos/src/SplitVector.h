@@ -33,7 +33,20 @@
 #include <stddef.h>     /* ptrdiff_t, size_t */
 #include <string.h>     /* memmove, memcpy, memset */
 
-/* ── Instantiation 1: SplitVector_Char (T = char) ───────────────────── */
+/* ── Instantiation 1: SplitVector_Ptr (T = void *) ─────────────────────
+ * Used by SparseVector_Ptr (C translation of SparseVector<EditionSetOwned>).
+ * Values are opaque owned pointers; lifecycle (malloc/free) is managed by
+ * the caller — SparseVector_Ptr never frees stored pointers on its own.
+ */
+#define SV_T       void *
+#define SV_SUFFIX  Ptr
+#define SV_ZERO    NULL
+#include "sv_tpl.h"
+#undef SV_T
+#undef SV_SUFFIX
+#undef SV_ZERO
+
+/* ── Instantiation 2: SplitVector_Char (T = char) ───────────────────── */
 #define SV_T       char
 #define SV_SUFFIX  Char
 #define SV_ZERO    '\0'

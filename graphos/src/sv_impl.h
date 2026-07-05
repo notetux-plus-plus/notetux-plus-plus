@@ -370,10 +370,13 @@ SV_T *SV_FN(RangePointer)(SV_STRUCT *self, ptrdiff_t position,
  * one side of the gap.
  */
 const SV_T *SV_FN(ElementPointer)(const SV_STRUCT *self, ptrdiff_t position) {
+    /* Explicit cast needed when SV_T = void * because C does not allow
+     * implicit void ** → const void ** conversion (unlike T * → const T *). */
+    const SV_T *base = (const SV_T *)self->body;
     if (position < self->part1Length)
-        return self->body + position;
+        return base + position;
     else
-        return self->body + position + self->gapLength;
+        return base + position + self->gapLength;
 }
 
 /* ── GapPosition ─────────────────────────────────────────────────── */

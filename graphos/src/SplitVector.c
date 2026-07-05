@@ -12,7 +12,16 @@
 
 #include "SplitVector.h"   /* brings in the struct typedefs via sv_tpl.h */
 
-/* ── Instantiation 1: SplitVector_Char (T = char) ───────────────────── */
+/* ── Instantiation 1: SplitVector_Ptr (T = void *) ─────────────────────*/
+#define SV_T       void *
+#define SV_SUFFIX  Ptr
+#define SV_ZERO    NULL
+#include "sv_impl.h"
+#undef SV_T
+#undef SV_SUFFIX
+#undef SV_ZERO
+
+/* ── Instantiation 2: SplitVector_Char (T = char) ───────────────────── */
 #define SV_T       char
 #define SV_SUFFIX  Char
 #define SV_ZERO    '\0'
